@@ -473,18 +473,18 @@
         </div>
       </div>
       <div class="input-group">
-        <label for="growthContribution">Contribution Amount ($)</label>
+        <label for="growthContribution">Contribution Amount($)</label>
         <input type="number" id="growthContribution" class="styled-input" min="0" step="100" value="0" />
       </div>
- <div class="input-group">
- 	 <label for="growthFrequency">Contribution Frequency</label>
-  	<select id="growthFrequency" class="styled-input">
-   	 <option value="yearly" selected>Yearly</option>
-   	 <option value="monthly">Monthly</option>
-   	 <option value="biweekly">Biweekly</option>
-    	<option value="weekly">Weekly</option>
- 	 </select>
-	</div>
+<div class="input-group">
+  <label for="growthFrequency">Contribution Frequency</label>
+  <select id="growthFrequency" class="styled-input">
+    <option value="yearly" selected>Yearly</option>
+    <option value="monthly">Monthly</option>
+    <option value="biweekly">Biweekly</option>
+    <option value="weekly">Weekly</option>
+  </select>
+</div>
 
       <div class="input-group">
         <label for="growthYears">Years</label>
@@ -517,9 +517,6 @@
       <dd>The per‑share value of a fund’s underlying holdings after expenses. It is calculated as (assets – liabilities) ÷ shares outstanding.</dd>
       <dt><strong>Income Frequencies</strong></dt>
       <dd>Funds may distribute payments on different schedules: weekly, monthly, quarterly, semi‑annually or annually. Payment schedules affect the timing of income flows but not the total annual amount.</dd>
-      <dt><strong>Contribution Frequency</strong></dt>
-      <dd>Choose how often you plan to contribute to your portfolio: weekly, biweekly, monthly, or yearly. The tool adjusts your growth projection accordingly by converting all contributions to an annual total.</dd>
-
     </dl>
   </section>
 
@@ -921,14 +918,13 @@ if (!data || !data.Symbol) {
   });
 
   // Growth projection calculations
-  function calculateGrowthProjection(initial, contrib, years, includeDrip, frequency = 'yearly') {
+  function calculateGrowthProjection(initial, contribAmount, years, includeDrip, frequency = 'yearly') {
   const values = [];
   let balance = initial;
 
-  // Weighted averages
+  // Weighted averages for CAGR and yield
   let weightedCAGR = 0;
   let weightedYield = 0;
-
   holdings.forEach(h => {
     const w = parseFloat(h.weight) / 100;
     weightedCAGR += w * (parseFloat(h.cagr) || 0) / 100;
@@ -937,126 +933,116 @@ if (!data || !data.Symbol) {
 
   const effectiveRate = weightedCAGR + weightedYield;
 
-  // Determine how many compounding periods per year
-  let periodsPerYear = 1;
-  switch (frequency) {
-    case 'monthly': periodsPerYear = 12; break;
-    case 'biweekly': periodsPerYear = 26; break;
-    case 'weekly': periodsPerYear = 52; break;
-    default: periodsPerYear = 1; break;
+  // Convert contribution to yearly total based on frequency
+  const contribPerYear = {
+    yearly: contribAmount,
+    monthly: contribAmount * 12,
+    biweekly: contribAmount * 26,
+    weekly: contribAmount * 52
+  }[frequency] || contribAmount;
+
+  for (let i = 1; i <= years; i++) {
+    balance += contribPerYear;
+    balance *= (1 + effectiveRate);
+    values.push({ year: i, value: parseFloat(balance.toFixed(2)) });
   }
-
-  const periodicRate = effectiveRate / periodsPerYear;
-  const periodicContrib = contrib / periodsPerYear;
-  const totalPeriods = years * periodsPerYear;
-
-  for (let i = 1; i <= totalPeriods; i++) {
-    balance = balance * (1 + periodicRate) + periodicContrib;
-    if (i % periodsPerYear === 0) {
-      values.push(balance.toFixed(2));
-    }
-  }
-
   return values;
 }
 
 
   function renderGrowthChart() {
-  const initial = parseFloat(accountSlider.value) || 0;
-  const contrib = parseFloat(document.getElementById('growthContribution').value) || 0;
-  const years = parseInt(document.getElementById('growthYears').value) || 0;
-  const freq = document.getElementById('growthFrequency').value;
-
-  const priceGrowth = calculateGrowthProjection(initial, contrib, years, false, freq);
-  const totalGrowth = calculateGrowthProjection(initial, contrib, years, true, freq);
-
-  const labels = priceGrowth.map((_, i) => `Year ${i + 1}`);
-  const priceData = priceGrowth.map(Number);
-  const totalData = totalGrowth.map(Number);
-  
-  const ctx = document.getElementById('growthChart').getContext('2d');
-  if (growthChartInstance) growthChartInstance.destroy();
-  growthChartInstance = new Chart(ctx, {
-    type: chartType,
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: 'Price Growth (CAGR only)',
-          data: priceData,
-          backgroundColor: chartType === 'bar' ? 'rgba(253, 208, 0, 0.6)' : 'transparent',
-          borderColor: 'rgba(253, 208, 0, 1)',
-          borderWidth: 2,
-          fill: false,
-          tension: 0.3,
-          pointBackgroundColor: chartType === 'bar' ? 'rgba(253, 208, 0, 0.6)' : 'rgba(253, 208, 0, 1)',
-          pointRadius: chartType === 'bar' ? 0 : 3,
-          pointHoverRadius: chartType === 'bar' ? 0 : 5
-        },
-        {
-          label: 'Total Growth (CAGR + DRIP)',
-          data: totalData,
-          backgroundColor: chartType === 'bar' ? 'rgba(76, 201, 240, 0.6)' : 'transparent',
-          borderColor: 'rgba(76, 201, 240, 1)',
-          borderWidth: 2,
-          fill: false,
-          tension: 0.3,
-          pointBackgroundColor: chartType === 'bar' ? 'rgba(76, 201, 240, 0.6)' : 'rgba(76, 201, 240, 1)',
-          pointRadius: chartType === 'bar' ? 0 : 3,
-          pointHoverRadius: chartType === 'bar' ? 0 : 5
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: {
-        mode: 'index', intersect: false
+    // Use the current portfolio value from the income slider as the initial amount
+    const initial = parseFloat(accountSlider.value) || 0;
+    const contrib = parseFloat(document.getElementById('growthContribution').value) || 0;
+    const years = parseInt(document.getElementById('growthYears').value) || 0;
+    const freq = document.getElementById('growthFrequency').value;
+	const priceGrowth = calculateGrowthProjection(initial, contrib, years, false, freq);
+	const totalGrowth = calculateGrowthProjection(initial, contrib, years, true, freq);
+    const labels = priceGrowth.map(d => `Year ${d.year}`);
+    const priceData = priceGrowth.map(d => d.value);
+    const totalData = totalGrowth.map(d => d.value);
+    const ctx = document.getElementById('growthChart').getContext('2d');
+    if (growthChartInstance) growthChartInstance.destroy();
+    growthChartInstance = new Chart(ctx, {
+      type: chartType,
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Price Growth (CAGR only)',
+            data: priceData,
+            backgroundColor: chartType === 'bar' ? 'rgba(253, 208, 0, 0.6)' : 'transparent',
+            borderColor: 'rgba(253, 208, 0, 1)',
+            borderWidth: 2,
+            fill: false,
+            tension: 0.3,
+            // Show points only in line mode to enable tooltips
+            pointBackgroundColor: chartType === 'bar' ? 'rgba(253, 208, 0, 0.6)' : 'rgba(253, 208, 0, 1)',
+            pointRadius: chartType === 'bar' ? 0 : 3,
+            pointHoverRadius: chartType === 'bar' ? 0 : 5
+          },
+          {
+            label: 'Total Growth (CAGR + DRIP)',
+            data: totalData,
+            backgroundColor: chartType === 'bar' ? 'rgba(76, 201, 240, 0.6)' : 'transparent',
+            borderColor: 'rgba(76, 201, 240, 1)',
+            borderWidth: 2,
+            fill: false,
+            tension: 0.3,
+            pointBackgroundColor: chartType === 'bar' ? 'rgba(76, 201, 240, 0.6)' : 'rgba(76, 201, 240, 1)',
+            pointRadius: chartType === 'bar' ? 0 : 3,
+            pointHoverRadius: chartType === 'bar' ? 0 : 5
+          }
+        ]
       },
-      plugins: {
-        tooltip: {
-          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--tooltip-bg').trim(),
-          titleColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
-          bodyColor: getComputedStyle(document.documentElement).getPropertyValue('--text-colour').trim(),
-          borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
-          borderWidth: 1,
-          cornerRadius: 8,
-          padding: 10,
-          titleFont: { family: "'Inter', sans-serif", weight: '600', size: 14 },
-          bodyFont: { family: "'Inter', sans-serif", weight: '400', size: 13 },
-          callbacks: {
-            label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index', intersect: false
+        },
+        plugins: {
+          tooltip: {
+	backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--tooltip-bg').trim(),
+	titleColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+	bodyColor: getComputedStyle(document.documentElement).getPropertyValue('--text-colour').trim(),
+	borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+	borderWidth: 1,
+	cornerRadius: 8,
+	padding: 10,
+	titleFont: { family: "'Inter', sans-serif", weight: '600', size: 14 },
+	bodyFont: { family: "'Inter', sans-serif", weight: '400', size: 13 },
+	callbacks: {
+    label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`
+		}
+	 },
+          legend: {
+            labels: { color: 'var(--text-colour)' }
           }
         },
-        legend: {
-          labels: { color: 'var(--text-colour)' }
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            callback: value => `$${value.toLocaleString()}`,
-            color: 'var(--text-colour)'
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: value => `$${value.toLocaleString()}`,
+              color: 'var(--text-colour)'
+            },
+            grid: { color: 'var(--border-colour)' }
           },
-          grid: { color: 'var(--border-colour)' }
-        },
-        x: {
-          ticks: { color: 'var(--text-colour)' },
-          grid: { color: 'var(--border-colour)' }
+          x: {
+            ticks: { color: 'var(--text-colour)' },
+            grid: { color: 'var(--border-colour)' }
+          }
         }
       }
-    }
-  });
-}
-
+    });
+  }
 
   function updateGrowthChart() {
     renderGrowthChart();
   }
 
   document.getElementById('growthContribution').addEventListener('input', updateGrowthChart);
-  document.getElementById('growthYears').addEventListener('input', updateGrowthChart);
   document.getElementById('growthFrequency').addEventListener('change', updateGrowthChart);
   document.getElementById('toggleGrowthChart').addEventListener('click', () => {
     chartType = chartType === 'bar' ? 'line' : 'bar';
