@@ -1044,6 +1044,7 @@ if (!data || !data.Symbol) {
 
   document.getElementById('growthContribution').addEventListener('input', updateGrowthChart);
   document.getElementById('growthFrequency').addEventListener('change', updateGrowthChart);
+  documtnet.getElementByID('growthYears').addEventListenter('input', updateGrowthChart);
   document.getElementById('toggleGrowthChart').addEventListener('click', () => {
     chartType = chartType === 'bar' ? 'line' : 'bar';
     document.getElementById('toggleGrowthChart').textContent = chartType === 'bar' ? 'Switch to Line Chart' : 'Switch to Bar Chart';
