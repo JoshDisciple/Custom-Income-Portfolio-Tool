@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Custom Income Portfolio Planner</title>
+  <!-- Google font for a modern look -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Chart.js for visualisations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /*
+      This tool is designed to be themeable.  Instead of hard‑coding
+      colours into every element, define a handful of CSS variables on
+      :root and then override them when the body has a `.light-mode`
+      class.  Changing themes simply means toggling that class on the
+      body element.
+    */
+    :root {
+      --bg-colour: #0e1525;
+      --card-bg: #1e294a;
+      --text-colour: #e4e8f2;
+      --muted-text: #9baacd;
+      --accent: #4cc9f0;
+      --hover-bg: #2e3e66;
+      --border-colour: #324877;
+      --tooltip-bg: rgba(14, 21, 37, 0.95);
+    }
+    .light-mode {
+      --bg-colour: #f5f7fa;
+      --card-bg: #ffffff;
+      --text-colour: #2a2a2a;
+      --muted-text: #5f6a82;
+      --accent: #0077b6;
+      --hover-bg: #e8f0fe;
+      --border-colour: #d1d9e6;
+      --tooltip-bg: rgba(255, 255, 255, 0.95);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-colour);
+      color: var(--text-colour);
+      line-height: 1.5;
+      /* Add bottom padding to accommodate the sticky summary bar so the footer isn't hidden */
+      padding-bottom: 4rem;
+    }
+    h1, h2, h3 {
+      margin: 0 0 0.5rem;
+      color: var(--accent);
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background-color: var(--bg-colour);
+      border-bottom: 1px solid var(--border-colour);
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    nav { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    nav a {
+      padding: 0.4rem 0.8rem;
+      border: 1px solid var(--accent);
+      border-radius: 5px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: background 0.2s, color 0.2s;
+    }
+    nav a:hover {
+      background-color: var(--accent);
+      color: var(--card-bg);
+    }
+    .card {
+      background-color: var(--card-bg);
+      margin: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 6px 18px rgba(0,0,0,0.4); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 0.6rem;
+      border-bottom: 1px solid var(--border-colour);
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    th {
+      background-color: var(--hover-bg);
+      color: var(--text-colour);
+    }
+    tr:hover:not(thead tr) { background-color: var(--hover-bg); cursor: pointer; }
+    .input-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 150px;
+    }
+    .input-group label { font-size: 0.8rem; color: var(--muted-text); margin-bottom: 0.25rem; }
+    .styled-input, select {
+      background-color: var(--card-bg);
+      color: var(--text-colour);
+      border: 1px solid var(--border-colour);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+    .styled-input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(76, 201, 240, 0.3);
+    }
+    .btn {
+      padding: 0.5rem 0.9rem;
+      border: 1px solid var(--accent);
+      background-color: var(--card-bg);
+      color: var(--accent);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn:hover {
+      background-color: var(--accent);
+      color: var(--card-bg);
+    }
+
+    /* Make DRIP checkboxes more readable, especially in dark mode */
+    input.drip-toggle {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    /* Tooltip styling */
+    .tooltip {
+  position: absolute;
+  background-color: var(--tooltip-bg);
+  color: var(--text-colour);
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  max-width: 280px;
+  pointer-events: none;
+  z-index: 9999;
+  border: 1px solid var(--accent);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  white-space: pre-line;
+  display: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+
+    /* Glossary spacing for readability */
+    #glossary dt {
+      margin-top: 0.75rem;
+      color: var(--accent);
+    }
+    #glossary dd {
+      margin-left: 0;
+      margin-bottom: 0.75rem;
+      font-size: 0.88rem;
+      color: var(--text-colour);
+    }
+    /* Sticky income summary bar */
+    .income-summary {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background-color: var(--card-bg);
+      border-top: 1px solid var(--border-colour);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      z-index: 1000;
+    }
+    /* Pie chart container */
+    #holdingsChartContainer { display: none; max-width: 600px; margin: 1rem auto; }
+    @media (max-width: 600px) {
+      .input-row { flex-direction: column; }
+      .income-summary { flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+    }
+
+  /* Custom styling for the portfolio value range slider to better match the theme */
+  #accountSlider {
+    /* Slider track styling */
+    width: 100%;
+    height: 8px;
+    background: var(--hover-bg);
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  /* WebKit track styling */
+  #accountSlider::-webkit-slider-runnable-track {
+    height: 8px;
+    background: var(--hover-bg);
+    border-radius: 4px;
+  }
+  /* Mozilla track styling */
+  #accountSlider::-moz-range-track {
+    height: 8px;
+    background: var(--hover-bg);
+    border-radius: 4px;
+  }
+  #accountSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 0 2px rgba(0,0,0,0.4);
+  }
+  #accountSlider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 0 2px rgba(0,0,0,0.4);
+  }
+  #customAlert {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+#customAlertBackdrop {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(2px);
+}
+
+#customAlertBox {
+  position: relative;
+  background-color: var(--card-bg);
+  color: var(--text-colour);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--accent);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  max-width: 400px;
+  width: 90%;
+  z-index: 1;
+  text-align: center;
+}
+
+#customAlertBox h3 {
+  margin-top: 0;
+  color: var(--accent);
+  font-size: 1.2rem;
+}
+
+#customAlertBox p {
+  margin: 1rem 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+#customAlertBox .btn {
+  margin-top: 0.5rem;
+}
+
+  </style>
+</head>
+<body>
+  <header class="sticky-header">
+    <div class="header-row">
+      <div>
+        <h1>📊 Custom Income Portfolio Planner</h1>
+        <small style="color: var(--muted-text);">Plan &amp; track your personalised income portfolio</small>
+      </div>
+      <nav>
+        <a href="#overview">Overview</a>
+        <a href="#weights">Category Weights</a>
+        <a href="#holdings">Holdings</a>
+        <a href="#contribution">Contribute</a>
+        <a href="#income-calc">Income</a>
+        <a href="#growth">Growth</a>
+		<a href="#glossary">Glossary</a>
+        <a href="#settings">Settings</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Tooltip placeholder; content filled by JS -->
+  <div id="tooltip" class="tooltip"></div>
+
+  <!-- Overview section -->
+  <section class="card" id="overview">
+    <h2>1. Overview</h2>
+    <p>This planner helps you design a personalised income‑oriented portfolio. Add your holdings, specify weights, set payment schedules and see how your money could work for you over time. The income and growth projections update on the fly as you make adjustments.</p>
+	<p><strong>Fetch Data:</strong> You can retrieve basic fund data using the API by entering a valid ticker symbol (e.g., <code>SCHD</code>) and clicking "Fetch". This will attempt to auto-fill the name, yield, CAGR, and expense ratio if available. You may still edit or overwrite the values manually before adding. The API currently only supports tickers that coincide with single stocks.
+</p>
+
+  </section>
+
+  <!-- Category weights section -->
+  <section class="card" id="weights">
+    <h2>2. Category Weights</h2>
+    <p>The table below aggregates your holdings by asset class.  Whenever you add or remove a holding, these totals update automatically.  If you prefer a visual breakdown, toggle the chart view in the holdings section.</p>
+    <table>
+      <thead><tr><th>Asset Class</th><th>Total Weight</th></tr></thead>
+      <tbody id="categoryWeightsBody"></tbody>
+    </table>
+  </section>
+
+  <!-- Holdings section with dynamic inputs -->
+  <section class="card" id="holdings">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+      <h2 style="margin:0;">3. Holdings</h2>
+      <button id="toggleHoldingsView" class="btn">Switch to Pie Chart</button>
+    </div>
+    <p>Add positions to your portfolio.  Enter fund metrics manually or attempt to fetch them automatically.</p>
+    <div class="input-row">
+      <div class="input-group">
+        <label for="newName">Fund Name</label>
+        <input type="text" id="newName" class="styled-input" placeholder="e.g. Schwab U.S. Dividend Equity ETF" />
+      </div>
+      <div class="input-group">
+        <label for="newTicker">Ticker</label>
+        <input type="text" id="newTicker" class="styled-input" placeholder="e.g. SCHD" />
+      </div>
+      <div class="input-group">
+        <label for="newClass">Asset Class</label>
+        <input type="text" id="newClass" class="styled-input" placeholder="e.g. Dividend Growth" />
+      </div>
+      <div class="input-group">
+        <label for="newWeight">Weight (%)</label>
+        <input type="number" id="newWeight" class="styled-input" min="0" step="0.1" placeholder="0" />
+      </div>
+      <div class="input-group">
+        <label for="newYield">Distribution Rate (Yield)</label>
+        <input type="number" id="newYield" class="styled-input" min="0" step="0.0001" placeholder="0.0389" />
+      </div>
+      <div class="input-group">
+        <label for="newCAGR">CAGR (%)</label>
+        <input type="number" id="newCAGR" class="styled-input" min="0" step="0.1" placeholder="10" />
+      </div>
+      <div class="input-group">
+        <label for="newExpense">Expense Ratio (%)</label>
+        <input type="number" id="newExpense" class="styled-input" min="0" step="0.01" placeholder="0.06" />
+      </div>
+      <div class="input-group">
+        <label for="newSchedule">Payment Schedule</label>
+        <select id="newSchedule" class="styled-input">
+          <option value="monthly">Monthly</option>
+          <option value="quarterly">Quarterly</option>
+          <option value="semi">Semi‑Annually</option>
+          <option value="annual">Annually</option>
+          <option value="weekly">Weekly</option>
+        </select>
+      </div>
+      <div class="input-group" style="flex-basis:100%;display:flex;align-items:flex-end;gap:0.5rem;">
+	<button id="fetchMetrics" class="btn" style="flex:0 0 auto;">Fetch</button>
+	<button id="addHolding" class="btn" style="flex:1;">Add</button>
+	</div>
+
+    </div>
+    <div style="margin-top:1rem;overflow-x:auto;">
+      <table>
+        <thead>
+  <tr>
+    <th data-sort="name"><span>Name</span></th>
+    <th data-sort="ticker"><span>Ticker</span></th>
+    <th data-sort="class"><span>Class</span></th>
+    <th data-sort="weight"><span>Weight (%)</span></th>
+    <th data-sort="yield"><span>Yield</span></th>
+    <th data-sort="cagr"><span>CAGR</span></th>
+    <th data-sort="expense"><span>Expense</span></th>
+    <th data-sort="schedule"><span>Schedule</span></th>
+    <th>DRIP</th>
+    <th>Actions</th>
+  </tr>
+</thead>
+
+        <tbody id="holdingsBody"></tbody>
+      </table>
+    </div>
+    <!-- Container for the pie chart of holdings -->
+    <div id="holdingsChartContainer">
+      <canvas id="holdingsChart" height="300"></canvas>
+    </div>
+  </section>
+
+  <!-- Contribution allocator -->
+  <section class="card" id="contribution">
+    <h2>4. Contribution Allocator</h2>
+    <p>Allocate a lump sum according to your target weights. Enter an amount and see how much goes to each holding.</p>
+    <div class="input-group" style="max-width:200px;">
+      <label for="contributionInput">Contribution Amount ($)</label>
+      <input type="number" id="contributionInput" class="styled-input" min="0" step="100" value="0" />
+    </div>
+    <div id="allocationBreakdown" style="margin-top:1rem; display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.75rem;"></div>
+  </section>
+
+  <!-- Income calculator -->
+  <section class="card" id="income-calc">
+    <h2>5. Income Calculator</h2>
+    <!-- Allow the slider to span the full width of the card for fine‑tuned adjustments -->
+    <div class="input-group" style="width:100%;">
+      <label for="accountSlider">Portfolio Value (<span id="sliderVal">$0</span>)</label>
+      <!-- Step reduced to $1000 increments for finer control -->
+      <input type="range" id="accountSlider" min="0" max="2000000" step="1000" value="0" />
+    </div>
+    <div style="margin-top:0.5rem;">
+      <strong>Yield on Cost:</strong> <span id="yieldOnCost">0.00%</span> | 
+      <strong>Weighted Distribution Yield:</strong> <span id="weightedYield">0.00%</span>
+    </div>
+    <div class="result-box" style="margin-top:1rem;font-size:1.1rem;">
+      <strong>Annual:</strong> <span id="annualIncome">$0</span> |
+      <strong>Quarterly:</strong> <span id="quarterIncome">$0</span> |
+      <strong>Monthly:</strong> <span id="monthlyIncome">$0</span>
+    </div>
+    <div id="incomeToggleBtns" style="margin-top:1rem; display:flex; flex-wrap:wrap; gap:0.5rem;">
+      <button id="toggleDetailedIncome" class="btn">Show Per-Holding Breakdown</button>
+      <button id="toggleClassIncome" class="btn">Show Asset‑Class Income</button>
+    </div>
+    <div id="detailedIncomeBreakdown" style="display:none;margin-top:1rem;"></div>
+    <div id="classIncomeBreakdown" style="display:none;margin-top:1rem;"></div>
+  </section>
+
+  <!-- Growth projection -->
+  <section class="card" id="growth">
+    <h2>6. Growth &amp; Income Projection</h2>
+    <p>Estimate how your portfolio may grow over time. The model supports both price growth (CAGR only) and total growth including reinvested distributions for holdings where DRIP is enabled. Adjust your starting amount, annual contributions and desired timeframe.</p>
+    <div class="input-row">
+      <!-- Show the portfolio value from the Income Calculator as the initial amount; no editing here -->
+      <div class="input-group">
+        <label>Initial ($)</label>
+        <div id="growthInitialDisplay" class="styled-input" style="background-color: transparent; border: none; padding-top: 0.5rem;">
+          $0
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="growthContribution">Annual Contribution ($)</label>
+        <input type="number" id="growthContribution" class="styled-input" min="0" step="100" value="0" />
+      </div>
+      <div class="input-group">
+        <label for="growthYears">Years</label>
+        <input type="number" id="growthYears" class="styled-input" min="1" step="1" value="10" />
+      </div>
+    </div>
+    <button id="toggleGrowthChart" class="btn" style="margin-top:1rem;">Switch to Line Chart</button>
+    <!-- Smaller chart height for better fit on screen -->
+    <canvas id="growthChart" height="250" style="margin-top:1rem; max-width:100%; max-height:250px;"></canvas>
+  </section>
+
+<!-- Glossary / Definitions -->
+  <section class="card" id="glossary">
+    <h2>7. Glossary &amp; Definitions</h2>
+    <p>Use this glossary to familiarise yourself with the terms used throughout this planner. Understanding these concepts will help you make more informed decisions when constructing your income portfolio.</p>
+    <dl style="margin-top:1rem;">
+      <dt><strong>Distribution Rate (Yield)</strong></dt>
+      <dd>The annualised distribution (dividend) rate expressed as a percentage of the fund’s value. A 3.9% yield means the fund pays distributions equal to 3.9% of its value each year.</dd>
+      <dt><strong>CAGR (Compound Annual Growth Rate)</strong></dt>
+      <dd>The mean annual growth rate of an investment over a specified time horizon longer than one year, assuming profits are reinvested at the end of each period.</dd>
+      <dt><strong>Expense Ratio</strong></dt>
+      <dd>The annual fee that funds charge to cover operating expenses, expressed as a percentage of assets. Lower expense ratios mean more of your money remains invested.</dd>
+      <dt><strong>DRIP (Dividend Reinvestment Plan)</strong></dt>
+      <dd>A setting that automatically reinvests distributions back into the holding rather than paying them out. Enabling DRIP can accelerate growth through compounding.</dd>
+      <dt><strong>Yield on Cost</strong></dt>
+      <dd>The current annual income divided by the total amount originally invested. It shows how the income compares to your cost basis.</dd>
+      <dt><strong>Weighted Distribution Yield</strong></dt>
+      <dd>The sum of each holding’s distribution yield weighted by its portfolio weight. It reflects the overall distribution rate of the portfolio.</dd>
+      <dt><strong>NAV (Net Asset Value)</strong></dt>
+      <dd>The per‑share value of a fund’s underlying holdings after expenses. It is calculated as (assets – liabilities) ÷ shares outstanding.</dd>
+      <dt><strong>Income Frequencies</strong></dt>
+      <dd>Funds may distribute payments on different schedules: weekly, monthly, quarterly, semi‑annually or annually. Payment schedules affect the timing of income flows but not the total annual amount.</dd>
+    </dl>
+  </section>
+
+  <!-- Settings & Import/Export -->
+  <section class="card" id="settings">
+    <h2>8. Settings</h2>
+    <p>You can save your current portfolio setup to a file and restore it later.  To back up your configuration, click Export.  To load a saved file, select it and click Import.</p>
+    <div style="margin-top:1rem; display:flex; flex-wrap:wrap; gap:1rem;">
+      <button id="exportBtn" class="btn">Export Configuration</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none;" />
+      <button id="importBtn" class="btn">Import Configuration</button>
+      <button id="themeToggle" class="btn">Toggle Light/Dark Mode</button>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="margin:2rem; text-align:center; color: var(--muted-text); font-size:0.85rem;">
+    <p>© 2025 JoshDisciple. This tool is for educational purposes only and does not constitute financial advice.</p>
+    <p>Created by <a href="https://twitter.com/JoshDisciple" target="_blank" style="color: var(--accent);">@JoshDisciple</a></p>
+	<p>Version: 1.1 | Release Date: Aug 6, 2025</p>
+	<p>Download the Newest Verison on <a href="https://www.patreon.com/c/JoshDisciple"> Patreon<a/></p>
+  </footer>
+
+  <!-- Sticky Income Summary Bar -->
+  <div class="income-summary">
+    <div>
+      <strong>Summary:</strong> Annual Income: <span id="summaryAnnual">$0</span> | Quarterly: <span id="summaryQuarter">$0</span> | Monthly: <span id="summaryMonthly">$0</span>
+    </div>
+    <div>
+      Total Portfolio: <span id="summaryPortfolio">$0</span>
+    </div>
+  </div>
+
+  <script>
+  /*
+    Data model: holdings is an array of objects with the following
+    properties:
+      name      – string
+      ticker    – string
+      class     – string (asset class)
+      weight    – number (percentage)
+      yield     – number (distribution yield as decimal, e.g. 0.0389)
+      cagr      – number (annual growth %)
+      expense   – number (expense ratio %)
+      schedule  – string (weekly, monthly, quarterly, semi, annual)
+      drip      – boolean (true = dividends reinvested)
+    All values are stored in localStorage so the portfolio persists between
+    sessions.  Category weights and summary metrics are derived from the
+    holdings array whenever it changes.
+  */
+
+  //
+  
+  const LS_KEY = 'customPortfolioHoldings';
+  const API_KEY = 'XZCCWSGO24QFND4T';
+  let holdings = [];
+  let chartType = 'bar';
+  let growthChartInstance = null;
+  let holdingsChart = null;
+  const holdingsBody = document.getElementById('holdingsBody');
+  const categoryWeightsBody = document.getElementById('categoryWeightsBody');
+  const contributionInput = document.getElementById('contributionInput');
+  const allocationBreakdown = document.getElementById('allocationBreakdown');
+  const accountSlider = document.getElementById('accountSlider');
+  const sliderValSpan = document.getElementById('sliderVal');
+  const annualSpan = document.getElementById('annualIncome');
+  const quarterSpan = document.getElementById('quarterIncome');
+  const monthlySpan = document.getElementById('monthlyIncome');
+  const summaryAnnual = document.getElementById('summaryAnnual');
+  const summaryQuarter = document.getElementById('summaryQuarter');
+  const summaryMonthly = document.getElementById('summaryMonthly');
+  const summaryPortfolio = document.getElementById('summaryPortfolio');
+  const yieldOnCostSpan = document.getElementById('yieldOnCost');
+  const weightedYieldSpan = document.getElementById('weightedYield');
+  const detailedIncomeDiv = document.getElementById('detailedIncomeBreakdown');
+  const tooltipDiv = document.getElementById('tooltip');
+
+  // Track index being edited; -1 when not editing
+  let editingIndex = -1;
+
+  // Helper: load holdings from localStorage
+  function loadHoldings() {
+    const stored = localStorage.getItem(LS_KEY);
+    holdings = stored ? JSON.parse(stored) : [];
+    renderHoldingsTable();
+    updateCategoryWeights();
+    updateContributionAllocation();
+    updateIncome();
+    updateGrowthChart();
+  }
+
+  // Helper: save holdings to localStorage
+  function saveHoldings() {
+    localStorage.setItem(LS_KEY, JSON.stringify(holdings));
+  }
+
+  // Render holdings table rows
+  function renderHoldingsTable() {
+    holdingsBody.innerHTML = '';
+    holdings.forEach((h, index) => {
+      const tr = document.createElement('tr');
+      tr.dataset.tooltip = `Yield: ${(h.yield * 100).toFixed(2)}%\nExpense: ${h.expense}%\nCAGR: ${h.cagr}%`;
+      tr.innerHTML = `
+        <td>${h.name}</td>
+        <td><a href="https://finance.yahoo.com/quote/${h.ticker}" target="_blank">${h.ticker}</a></td>
+        <td>${h.class}</td>
+        <td>${parseFloat(h.weight).toFixed(2)}</td>
+        <td>${(h.yield * 100).toFixed(2)}%</td>
+        <td>${parseFloat(h.cagr).toFixed(2)}%</td>
+        <td>${parseFloat(h.expense).toFixed(2)}%</td>
+        <td>${h.schedule}</td>
+        <td><input type="checkbox" ${h.drip ? 'checked' : ''} data-index="${index}" class="drip-toggle" /></td>
+        <td>
+          <button data-index="${index}" class="btn btn-edit">Edit</button>
+          <button data-index="${index}" class="btn btn-delete" style="margin-left:0.3rem;">Delete</button>
+        </td>
+      `;
+      holdingsBody.appendChild(tr);
+    });
+    attachRowEvents();
+  }
+  
+  //API Fetch function
+  
+  let canFetch = true;
+  
+ async function fetchMetrics() {
+ if (!canFetch) {
+  showCustomAlert("Please wait 15 seconds between fetch requests.");
+  return;
+}
+
+  const ticker = document.getElementById('newTicker').value.trim().toUpperCase();
+  if (!ticker) {
+    showCustomAlert("Please enter a ticker symbol first.");
+    return;
+  }
+  
+  canFetch = false;
+setTimeout(() => { canFetch = true; }, 15000); // 15 sec timer
+
+
+  try {
+    // Use Yahoo Finance via RapidAPI or fallback (adjust as needed for Alpha Vantage if they support ratios)
+    const url = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${ticker}&apikey=${API_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.Note) {
+  showCustomAlert("API limit reached. Please wait a minute before trying again.");
+  return;
+}
+
+if (!data || !data.Symbol) {
+  showCustomAlert("No data found for that ticker. You may need to enter values manually.");
+  return;
+}
+
+
+    // Populate fields if available
+    if (data.Name) document.getElementById('newName').value = data.Name;
+    if (data.AssetType) document.getElementById('newClass').value = data.AssetType;
+    if (data.DividendYield) document.getElementById('newYield').value = (parseFloat(data.DividendYield) || 0).toFixed(4);
+    if (data.ReturnOnEquityTTM) document.getElementById('newCAGR').value = (parseFloat(data.ReturnOnEquityTTM) || 0).toFixed(2);
+    if (data.ExpenseRatio) document.getElementById('newExpense').value = (parseFloat(data.ExpenseRatio) || 0).toFixed(2);
+  } catch (err) {
+    console.error(err);
+    showCustomAlert("Failed to fetch data. Try again later or enter manually.");
+  }
+}
+
+
+  // Attach events for tooltips and interactions
+  function attachRowEvents() {
+    // Show tooltip when hovering over any cell in a row
+    holdingsBody.querySelectorAll('tr').forEach(row => {
+      row.addEventListener('mouseenter', e => {
+        const message = row.dataset.tooltip;
+        tooltipDiv.textContent = message;
+        tooltipDiv.style.display = 'block';
+      });
+      row.addEventListener('mousemove', e => {
+        const x = e.pageX + 10;
+        const y = e.pageY + 10;
+        tooltipDiv.style.left = x + 'px';
+        tooltipDiv.style.top = y + 'px';
+      });
+      row.addEventListener('mouseleave', () => {
+        tooltipDiv.style.display = 'none';
+      });
+    });
+    // Delete buttons
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const idx = parseInt(e.target.getAttribute('data-index'));
+        holdings.splice(idx, 1);
+        saveHoldings();
+        renderHoldingsTable();
+        updateCategoryWeights();
+        updateContributionAllocation();
+        updateIncome();
+        updateGrowthChart();
+      });
+    });
+
+    // Edit buttons
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const idx = parseInt(e.target.getAttribute('data-index'));
+        editingIndex = idx;
+        const h = holdings[idx];
+        // Populate form with existing values
+        document.getElementById('newName').value = h.name;
+        document.getElementById('newTicker').value = h.ticker;
+        document.getElementById('newClass').value = h.class;
+        document.getElementById('newWeight').value = h.weight;
+        document.getElementById('newYield').value = h.yield;
+        document.getElementById('newCAGR').value = h.cagr;
+        document.getElementById('newExpense').value = h.expense;
+        document.getElementById('newSchedule').value = h.schedule;
+        // Change Add button label to indicate update
+        document.getElementById('addHolding').textContent = 'Update';
+      });
+    });
+    // DRIP toggles
+    document.querySelectorAll('.drip-toggle').forEach(chk => {
+      chk.addEventListener('change', e => {
+        const idx = parseInt(e.target.getAttribute('data-index'));
+        holdings[idx].drip = e.target.checked;
+        saveHoldings();
+        updateGrowthChart();
+      });
+    });
+  }
+
+  // Update category weights table
+  function updateCategoryWeights() {
+    const totals = {};
+    holdings.forEach(h => {
+      if (!totals[h.class]) totals[h.class] = 0;
+      totals[h.class] += parseFloat(h.weight);
+    });
+    categoryWeightsBody.innerHTML = '';
+    Object.keys(totals).forEach(cls => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${cls}</td><td>${totals[cls].toFixed(2)}%</td>`;
+      categoryWeightsBody.appendChild(tr);
+    });
+  }
+
+  // Update contribution allocation display
+  function updateContributionAllocation() {
+    const amount = parseFloat(contributionInput.value) || 0;
+    allocationBreakdown.innerHTML = '';
+    holdings.forEach(h => {
+      const allocated = (amount * parseFloat(h.weight) / 100).toFixed(2);
+      const box = document.createElement('div');
+      box.style.backgroundColor = 'var(--hover-bg)';
+      box.style.border = '1px solid var(--border-colour)';
+      box.style.borderRadius = '6px';
+      box.style.padding = '0.5rem';
+      box.style.fontSize = '0.85rem';
+      box.innerHTML = `<strong>${h.ticker}:</strong> $${Number(allocated).toLocaleString()}`;
+      allocationBreakdown.appendChild(box);
+    });
+  }
+
+  contributionInput.addEventListener('input', updateContributionAllocation);
+
+  // Income calculation functions
+  function updateIncome() {
+    const portfolio = parseFloat(accountSlider.value) || 0;
+    sliderValSpan.textContent = `$${Number(portfolio).toLocaleString()}`;
+    let annual = 0;
+    let weightedYield = 0;
+    let costYield = 0;
+    holdings.forEach(h => {
+      const weight = parseFloat(h.weight) / 100;
+      const value = portfolio * weight;
+      const income = value * h.yield;
+      annual += income;
+      weightedYield += weight * h.yield;
+      costYield += weight * h.yield; // yield on cost identical here since cost basis unknown
+    });
+    const monthly = annual / 12;
+    const quarter = annual / 4;
+    annualSpan.textContent = `$${annual.toFixed(2).toLocaleString()}`;
+    monthlySpan.textContent = `$${monthly.toFixed(2).toLocaleString()}`;
+    quarterSpan.textContent = `$${quarter.toFixed(2).toLocaleString()}`;
+    weightedYieldSpan.textContent = (weightedYield * 100).toFixed(2) + '%';
+    yieldOnCostSpan.textContent = (costYield * 100).toFixed(2) + '%';
+    // Update summary bar
+    summaryAnnual.textContent = annualSpan.textContent;
+    summaryQuarter.textContent = quarterSpan.textContent;
+    summaryMonthly.textContent = monthlySpan.textContent;
+    summaryPortfolio.textContent = `$${Number(portfolio).toLocaleString()}`;
+
+    // Show the portfolio value in the growth section and refresh the growth chart
+    const growthInitialDisplay = document.getElementById('growthInitialDisplay');
+    if (growthInitialDisplay) {
+      growthInitialDisplay.textContent = `$${Number(portfolio).toLocaleString()}`;
+    }
+    updateGrowthChart();
+    // If detailed breakdown visible update it
+    if (detailedIncomeDiv.style.display !== 'none') {
+      renderDetailedIncome(portfolio);
+    }
+    // If class income breakdown visible update it
+    const classDiv = document.getElementById('classIncomeBreakdown');
+    if (classDiv.style.display !== 'none') {
+      renderClassIncome(portfolio);
+    }
+  }
+
+  // Render per holding income breakdown
+  function renderDetailedIncome(portfolio) {
+    let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.75rem;">';
+    holdings.forEach(h => {
+      const weight = parseFloat(h.weight) / 100;
+      const val = portfolio * weight;
+      const annualIncome = val * h.yield;
+      const monthlyIncome = annualIncome / 12;
+      const quarterlyIncome = annualIncome / 4;
+      html += `<div style="background: var(--hover-bg); border:1px solid var(--border-colour); padding:0.5rem; border-radius:6px; font-size:0.85rem;">
+        <strong>${h.ticker}</strong><br>
+        $${val.toFixed(2).toLocaleString()}<br>
+        <span style="color: var(--accent);">$${annualIncome.toFixed(2).toLocaleString()}</span>/yr<br>
+        <span>$${quarterlyIncome.toFixed(2).toLocaleString()}</span>/qtr<br>
+        <span>$${monthlyIncome.toFixed(2).toLocaleString()}</span>/mo
+      </div>`;
+    });
+    html += '</div>';
+    detailedIncomeDiv.innerHTML = html;
+  }
+
+  // Render per asset class income breakdown
+  function renderClassIncome(portfolio) {
+    /*
+      Aggregate incomes by asset class.  For each holding we calculate
+      its annual distribution (value * yield) and accumulate these
+      amounts under the corresponding asset class.  Then we derive
+      quarterly and monthly payouts by dividing by 4 and 12.  This
+      breakdown lets users see which asset classes generate the most
+      income across the portfolio.
+    */
+    const classTotals = {};
+    holdings.forEach(h => {
+      const weight = parseFloat(h.weight) / 100;
+      const value = portfolio * weight;
+      const annual = value * h.yield;
+      if (!classTotals[h.class]) {
+        classTotals[h.class] = { value: 0, annual: 0 };
+      }
+      classTotals[h.class].value += value;
+      classTotals[h.class].annual += annual;
+    });
+    let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.75rem;">';
+    Object.keys(classTotals).forEach(cls => {
+      const obj = classTotals[cls];
+      const annual = obj.annual;
+      const quarterly = annual / 4;
+      const monthly = annual / 12;
+      html += `<div style="background: var(--hover-bg); border:1px solid var(--border-colour); padding:0.5rem; border-radius:6px; font-size:0.85rem;">
+        <strong>${cls}</strong><br>
+        $${obj.value.toFixed(2).toLocaleString()}<br>
+        <span style="color: var(--accent);">$${annual.toFixed(2).toLocaleString()}</span>/yr<br>
+        <span>$${quarterly.toFixed(2).toLocaleString()}</span>/qtr<br>
+        <span>$${monthly.toFixed(2).toLocaleString()}</span>/mo
+      </div>`;
+    });
+    html += '</div>';
+    document.getElementById('classIncomeBreakdown').innerHTML = html;
+  }
+
+  accountSlider.addEventListener('input', updateIncome);
+
+  document.getElementById('toggleDetailedIncome').addEventListener('click', function() {
+    if (detailedIncomeDiv.style.display === 'none') {
+      detailedIncomeDiv.style.display = 'block';
+      this.textContent = 'Hide Per-Holding Breakdown';
+      renderDetailedIncome(parseFloat(accountSlider.value) || 0);
+    } else {
+      detailedIncomeDiv.style.display = 'none';
+      this.textContent = 'Show Per-Holding Breakdown';
+    }
+  });
+
+  // Toggle asset-class income breakdown
+  document.getElementById('toggleClassIncome').addEventListener('click', function() {
+    const classDiv = document.getElementById('classIncomeBreakdown');
+    if (classDiv.style.display === 'none') {
+      classDiv.style.display = 'block';
+      this.textContent = 'Hide Asset‑Class Income';
+      renderClassIncome(parseFloat(accountSlider.value) || 0);
+    } else {
+      classDiv.style.display = 'none';
+      this.textContent = 'Show Asset‑Class Income';
+    }
+  });
+
+  // Growth projection calculations
+  function calculateGrowthProjection(initial, annualContrib, years, includeDrip) {
+    const values = [];
+    let balance = initial;
+    // Weighted averages for CAGR and yield
+    let weightedCAGR = 0;
+    let weightedYield = 0;
+    holdings.forEach(h => {
+      const w = parseFloat(h.weight) / 100;
+      weightedCAGR += w * (parseFloat(h.cagr) || 0) / 100;
+      if (includeDrip && h.drip) weightedYield += w * h.yield;
+    });
+    const effectiveRate = weightedCAGR + weightedYield;
+    for (let i = 1; i <= years; i++) {
+      balance += annualContrib;
+      balance *= (1 + effectiveRate);
+      values.push({ year: i, value: parseFloat(balance.toFixed(2)) });
+    }
+    return values;
+  }
+
+  function renderGrowthChart() {
+    // Use the current portfolio value from the income slider as the initial amount
+    const initial = parseFloat(accountSlider.value) || 0;
+    const contrib = parseFloat(document.getElementById('growthContribution').value) || 0;
+    const years = parseInt(document.getElementById('growthYears').value) || 0;
+    const priceGrowth = calculateGrowthProjection(initial, contrib, years, false);
+    const totalGrowth = calculateGrowthProjection(initial, contrib, years, true);
+    const labels = priceGrowth.map(d => `Year ${d.year}`);
+    const priceData = priceGrowth.map(d => d.value);
+    const totalData = totalGrowth.map(d => d.value);
+    const ctx = document.getElementById('growthChart').getContext('2d');
+    if (growthChartInstance) growthChartInstance.destroy();
+    growthChartInstance = new Chart(ctx, {
+      type: chartType,
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Price Growth (CAGR only)',
+            data: priceData,
+            backgroundColor: chartType === 'bar' ? 'rgba(253, 208, 0, 0.6)' : 'transparent',
+            borderColor: 'rgba(253, 208, 0, 1)',
+            borderWidth: 2,
+            fill: false,
+            tension: 0.3,
+            // Show points only in line mode to enable tooltips
+            pointBackgroundColor: chartType === 'bar' ? 'rgba(253, 208, 0, 0.6)' : 'rgba(253, 208, 0, 1)',
+            pointRadius: chartType === 'bar' ? 0 : 3,
+            pointHoverRadius: chartType === 'bar' ? 0 : 5
+          },
+          {
+            label: 'Total Growth (CAGR + DRIP)',
+            data: totalData,
+            backgroundColor: chartType === 'bar' ? 'rgba(76, 201, 240, 0.6)' : 'transparent',
+            borderColor: 'rgba(76, 201, 240, 1)',
+            borderWidth: 2,
+            fill: false,
+            tension: 0.3,
+            pointBackgroundColor: chartType === 'bar' ? 'rgba(76, 201, 240, 0.6)' : 'rgba(76, 201, 240, 1)',
+            pointRadius: chartType === 'bar' ? 0 : 3,
+            pointHoverRadius: chartType === 'bar' ? 0 : 5
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index', intersect: false
+        },
+        plugins: {
+          tooltip: {
+	backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--tooltip-bg').trim(),
+	titleColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+	bodyColor: getComputedStyle(document.documentElement).getPropertyValue('--text-colour').trim(),
+	borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+	borderWidth: 1,
+	cornerRadius: 8,
+	padding: 10,
+	titleFont: { family: "'Inter', sans-serif", weight: '600', size: 14 },
+	bodyFont: { family: "'Inter', sans-serif", weight: '400', size: 13 },
+	callbacks: {
+    label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`
+		}
+	 },
+          legend: {
+            labels: { color: 'var(--text-colour)' }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: value => `$${value.toLocaleString()}`,
+              color: 'var(--text-colour)'
+            },
+            grid: { color: 'var(--border-colour)' }
+          },
+          x: {
+            ticks: { color: 'var(--text-colour)' },
+            grid: { color: 'var(--border-colour)' }
+          }
+        }
+      }
+    });
+  }
+
+  function updateGrowthChart() {
+    renderGrowthChart();
+  }
+
+  document.getElementById('growthContribution').addEventListener('input', updateGrowthChart);
+  document.getElementById('growthYears').addEventListener('input', updateGrowthChart);
+  document.getElementById('toggleGrowthChart').addEventListener('click', () => {
+    chartType = chartType === 'bar' ? 'line' : 'bar';
+    document.getElementById('toggleGrowthChart').textContent = chartType === 'bar' ? 'Switch to Line Chart' : 'Switch to Bar Chart';
+    updateGrowthChart();
+  });
+
+  // Handle holdings view toggle between table and pie chart
+  document.getElementById('toggleHoldingsView').addEventListener('click', function() {
+    const tableBody = document.getElementById('holdingsBody');
+    const chartContainer = document.getElementById('holdingsChartContainer');
+    if (chartContainer.style.display === 'none' || chartContainer.style.display === '') {
+      // Show chart, hide table
+      chartContainer.style.display = 'block';
+      document.querySelector('#holdings tbody').style.display = 'none';
+      this.textContent = 'Switch to Table View';
+      renderHoldingsPieChart();
+    } else {
+      chartContainer.style.display = 'none';
+      document.querySelector('#holdings tbody').style.display = 'table-row-group';
+      this.textContent = 'Switch to Pie Chart';
+    }
+  });
+
+  function renderHoldingsPieChart() {
+    const ctx = document.getElementById('holdingsChart').getContext('2d');
+    const labels = holdings.map(h => h.ticker);
+    const data = holdings.map(h => parseFloat(h.weight));
+    const colours = labels.map((_, idx) => `hsl(${(idx * 360 / labels.length)}, 70%, 50%)`);
+    if (holdingsChart) holdingsChart.destroy();
+    holdingsChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            data: data,
+            backgroundColor: colours,
+            hoverOffset: 6
+          }
+        ]
+      },
+      options: {
+        plugins: {
+          legend: { labels: { color: 'var(--text-colour)' } },
+          tooltip: {
+  backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--tooltip-bg').trim(),
+  titleColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+  bodyColor: getComputedStyle(document.documentElement).getPropertyValue('--text-colour').trim(),
+  borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+  borderWidth: 1,
+  cornerRadius: 8,
+  padding: 10,
+  titleFont: { family: "'Inter', sans-serif", weight: '600', size: 14 },
+  bodyFont: { family: "'Inter', sans-serif", weight: '400', size: 13 },
+  callbacks: {
+    label: ctx => `${ctx.label}: ${ctx.parsed}%`
+  }
+}
+
+        }
+      }
+    });
+  }
+  
+  //Custom Alertbox
+  function showCustomAlert(message) {
+  const alertBox = document.getElementById('customAlert');
+  const alertMessage = document.getElementById('customAlertMessage');
+  const closeBtn = document.getElementById('customAlertClose');
+
+  alertMessage.textContent = message;
+  alertBox.style.display = 'flex';
+
+  closeBtn.onclick = () => {
+    alertBox.style.display = 'none';
+  };
+}
+
+
+  // Add holding manually
+  document.getElementById('addHolding').addEventListener('click', () => {
+  const name = document.getElementById('newName').value.trim();
+  const ticker = document.getElementById('newTicker').value.trim().toUpperCase();
+  const cls = document.getElementById('newClass').value.trim();
+  const weightRaw = document.getElementById('newWeight').value;
+  const yieldRaw = document.getElementById('newYield').value;
+  const cagrRaw = document.getElementById('newCAGR').value;
+  const expenseRaw = document.getElementById('newExpense').value;
+  const schedule = document.getElementById('newSchedule').value;
+
+  if (!ticker) {
+    showCustomAlert('Please enter at least a ticker symbol.');
+    return;
+  }
+
+  const weight = isNaN(parseFloat(weightRaw)) ? 0 : parseFloat(weightRaw);
+  const yieldVal = isNaN(parseFloat(yieldRaw)) ? 0 : parseFloat(yieldRaw);
+  const cagr = isNaN(parseFloat(cagrRaw)) ? 0 : parseFloat(cagrRaw);
+  const expense = isNaN(parseFloat(expenseRaw)) ? 0 : parseFloat(expenseRaw);
+
+  // Validate & Enforce Maximimum Weight
+  const totalWeight = holdings.reduce((sum, h, i) => {
+    return sum + (i === editingIndex ? 0 : parseFloat(h.weight) || 0);
+  }, 0);
+
+  const newTotal = totalWeight + weight;
+
+  if (newTotal > 100) {
+    showCustomAlert(`Total portfolio weight cannot exceed 100%. You are trying to set it to ${newTotal.toFixed(2)}%.`);
+    return;
+  }
+
+  // Proceed as usual
+  const holding = {
+    name: name || ticker,
+    ticker: ticker,
+    class: cls || 'Uncategorised',
+    weight: weight,
+    yield: yieldVal,
+    cagr: cagr,
+    expense: expense,
+    schedule: schedule,
+    drip: true
+  };
+
+  // existing logic continues...
+
+    if (editingIndex >= 0) {
+      // Update existing holding while preserving DRIP toggle
+      const original = holdings[editingIndex];
+      holdings[editingIndex] = {
+        ...original,
+        name: name || ticker,
+        ticker: ticker,
+        class: cls || 'Uncategorised',
+        weight: weight,
+        yield: yieldVal,
+        cagr: cagr,
+        expense: expense,
+        schedule: schedule
+      };
+      editingIndex = -1;
+      document.getElementById('addHolding').textContent = 'Add';
+    } else {
+      holdings.push(holding);
+    }
+    saveHoldings();
+    // Clear form inputs
+    document.getElementById('newName').value = '';
+    document.getElementById('newTicker').value = '';
+    document.getElementById('newClass').value = '';
+    document.getElementById('newWeight').value = '';
+    document.getElementById('newYield').value = '';
+    document.getElementById('newCAGR').value = '';
+    document.getElementById('newExpense').value = '';
+    renderHoldingsTable();
+    updateCategoryWeights();
+    updateContributionAllocation();
+    updateIncome();
+    updateGrowthChart();
+  });
+
+  // Fetch button removed; external API lookup disabled until a reliable source is available
+
+  // Import/export configuration
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const dataStr = JSON.stringify(holdings, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'portfolio_config.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('importBtn').addEventListener('click', () => {
+    document.getElementById('importFile').click();
+  });
+  document.getElementById('importFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        const imported = JSON.parse(evt.target.result);
+        if (Array.isArray(imported)) {
+          holdings = imported;
+          saveHoldings();
+          renderHoldingsTable();
+          updateCategoryWeights();
+          updateContributionAllocation();
+          updateIncome();
+          updateGrowthChart();
+        } else {
+          showCustomAlert('Invalid configuration file.');
+        }
+      } catch (err) {
+        ShowCustomAlert('Failed to parse configuration.');
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  // Theme toggle
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    document.body.classList.toggle('light-mode');
+  });
+  
+  // Sort Indicators
+  let currentSort = { key: null, asc: true };
+
+function updateSortIndicators() {
+  document.querySelectorAll('#holdings thead th[data-sort]').forEach(th => {
+    const key = th.dataset.sort;
+    const span = th.querySelector('span');
+    if (!span) return;
+
+    const label = span.textContent.replace(/[\u25B2\u25BC]/g, '').trim();
+
+    if (key === currentSort.key) {
+      span.textContent = label + (currentSort.asc ? ' ▲' : ' ▼');
+    } else {
+      span.textContent = label;
+    }
+  });
+}
+
+
+  // Initialise after DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('#holdings thead th[data-sort]').forEach(th => {
+  th.style.cursor = 'pointer';
+  th.addEventListener('click', () => {
+    const key = th.dataset.sort;
+    const isAsc = currentSort.key === key ? !currentSort.asc : true;
+    currentSort = { key, asc: isAsc };
+	
+    holdings.sort((a, b) => {
+      const valA = a[key];
+      const valB = b[key];
+
+      if (typeof valA === 'string') {
+        return isAsc
+          ? valA.localeCompare(valB)
+          : valB.localeCompare(valA);
+      } else {
+        return isAsc
+          ? parseFloat(valA) - parseFloat(valB)
+          : parseFloat(valB) - parseFloat(valA);
+      }
+    });
+
+    renderHoldingsTable();
+    updateSortIndicators();
+  });
+});
+
+document.getElementById('fetchMetrics').addEventListener('click', fetchMetrics);
+
+
+    loadHoldings();
+    // Default slider value
+    accountSlider.value = 0;
+    updateIncome();
+  });
+  </script>
+  
+  <!-- Custom warning modal -->
+<div id="customAlert" style="display:none;">
+  <div id="customAlertBackdrop"></div>
+  <div id="customAlertBox">
+    <h3>⚠ Warning</h3>
+    <p id="customAlertMessage"></p>
+    <button id="customAlertClose" class="btn">OK</button>
+  </div>
+</div>
+
+</body>
+</html>
