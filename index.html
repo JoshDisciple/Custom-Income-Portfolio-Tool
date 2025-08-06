@@ -962,93 +962,94 @@ if (!data || !data.Symbol) {
 
 
   function renderGrowthChart() {
-    // Use the current portfolio value from the income slider as the initial amount
-    const initial = parseFloat(accountSlider.value) || 0;
-    const contrib = parseFloat(document.getElementById('growthContribution').value) || 0;
-    const years = parseInt(document.getElementById('growthYears').value) || 0;
-    const freq = document.getElementById('growthFrequency').value;
-    const priceGrowth = calculateGrowthProjection(initial, contrib, years, false, freq);
-    const totalGrowth = calculateGrowthProjection(initial, contrib, years, true, freq);
-    const totalGrowth = calculateGrowthProjection(initial, contrib, years, true);
-    const labels = priceGrowth.map(d => `Year ${d.year}`);
-    const priceData = priceGrowth.map(d => d.value);
-    const totalData = totalGrowth.map(d => d.value);
-    const ctx = document.getElementById('growthChart').getContext('2d');
-    if (growthChartInstance) growthChartInstance.destroy();
-    growthChartInstance = new Chart(ctx, {
-      type: chartType,
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: 'Price Growth (CAGR only)',
-            data: priceData,
-            backgroundColor: chartType === 'bar' ? 'rgba(253, 208, 0, 0.6)' : 'transparent',
-            borderColor: 'rgba(253, 208, 0, 1)',
-            borderWidth: 2,
-            fill: false,
-            tension: 0.3,
-            // Show points only in line mode to enable tooltips
-            pointBackgroundColor: chartType === 'bar' ? 'rgba(253, 208, 0, 0.6)' : 'rgba(253, 208, 0, 1)',
-            pointRadius: chartType === 'bar' ? 0 : 3,
-            pointHoverRadius: chartType === 'bar' ? 0 : 5
-          },
-          {
-            label: 'Total Growth (CAGR + DRIP)',
-            data: totalData,
-            backgroundColor: chartType === 'bar' ? 'rgba(76, 201, 240, 0.6)' : 'transparent',
-            borderColor: 'rgba(76, 201, 240, 1)',
-            borderWidth: 2,
-            fill: false,
-            tension: 0.3,
-            pointBackgroundColor: chartType === 'bar' ? 'rgba(76, 201, 240, 0.6)' : 'rgba(76, 201, 240, 1)',
-            pointRadius: chartType === 'bar' ? 0 : 3,
-            pointHoverRadius: chartType === 'bar' ? 0 : 5
-          }
-        ]
+  const initial = parseFloat(accountSlider.value) || 0;
+  const contrib = parseFloat(document.getElementById('growthContribution').value) || 0;
+  const years = parseInt(document.getElementById('growthYears').value) || 0;
+  const freq = document.getElementById('growthFrequency').value;
+
+  const priceGrowth = calculateGrowthProjection(initial, contrib, years, false, freq);
+  const totalGrowth = calculateGrowthProjection(initial, contrib, years, true, freq);
+
+  const labels = priceGrowth.map((_, i) => `Year ${i + 1}`);
+  const priceData = priceGrowth.map(Number);
+  const totalData = totalGrowth.map(Number);
+  
+  const ctx = document.getElementById('growthChart').getContext('2d');
+  if (growthChartInstance) growthChartInstance.destroy();
+  growthChartInstance = new Chart(ctx, {
+    type: chartType,
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Price Growth (CAGR only)',
+          data: priceData,
+          backgroundColor: chartType === 'bar' ? 'rgba(253, 208, 0, 0.6)' : 'transparent',
+          borderColor: 'rgba(253, 208, 0, 1)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.3,
+          pointBackgroundColor: chartType === 'bar' ? 'rgba(253, 208, 0, 0.6)' : 'rgba(253, 208, 0, 1)',
+          pointRadius: chartType === 'bar' ? 0 : 3,
+          pointHoverRadius: chartType === 'bar' ? 0 : 5
+        },
+        {
+          label: 'Total Growth (CAGR + DRIP)',
+          data: totalData,
+          backgroundColor: chartType === 'bar' ? 'rgba(76, 201, 240, 0.6)' : 'transparent',
+          borderColor: 'rgba(76, 201, 240, 1)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.3,
+          pointBackgroundColor: chartType === 'bar' ? 'rgba(76, 201, 240, 0.6)' : 'rgba(76, 201, 240, 1)',
+          pointRadius: chartType === 'bar' ? 0 : 3,
+          pointHoverRadius: chartType === 'bar' ? 0 : 5
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index', intersect: false
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-          mode: 'index', intersect: false
-        },
-        plugins: {
-          tooltip: {
-	backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--tooltip-bg').trim(),
-	titleColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
-	bodyColor: getComputedStyle(document.documentElement).getPropertyValue('--text-colour').trim(),
-	borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
-	borderWidth: 1,
-	cornerRadius: 8,
-	padding: 10,
-	titleFont: { family: "'Inter', sans-serif", weight: '600', size: 14 },
-	bodyFont: { family: "'Inter', sans-serif", weight: '400', size: 13 },
-	callbacks: {
-    label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`
-		}
-	 },
-          legend: {
-            labels: { color: 'var(--text-colour)' }
+      plugins: {
+        tooltip: {
+          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--tooltip-bg').trim(),
+          titleColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+          bodyColor: getComputedStyle(document.documentElement).getPropertyValue('--text-colour').trim(),
+          borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+          borderWidth: 1,
+          cornerRadius: 8,
+          padding: 10,
+          titleFont: { family: "'Inter', sans-serif", weight: '600', size: 14 },
+          bodyFont: { family: "'Inter', sans-serif", weight: '400', size: 13 },
+          callbacks: {
+            label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`
           }
         },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: value => `$${value.toLocaleString()}`,
-              color: 'var(--text-colour)'
-            },
-            grid: { color: 'var(--border-colour)' }
+        legend: {
+          labels: { color: 'var(--text-colour)' }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: value => `$${value.toLocaleString()}`,
+            color: 'var(--text-colour)'
           },
-          x: {
-            ticks: { color: 'var(--text-colour)' },
-            grid: { color: 'var(--border-colour)' }
-          }
+          grid: { color: 'var(--border-colour)' }
+        },
+        x: {
+          ticks: { color: 'var(--text-colour)' },
+          grid: { color: 'var(--border-colour)' }
         }
       }
-    });
-  }
+    }
+  });
+}
+
 
   function updateGrowthChart() {
     renderGrowthChart();
