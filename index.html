@@ -473,9 +473,19 @@
         </div>
       </div>
       <div class="input-group">
-        <label for="growthContribution">Annual Contribution ($)</label>
+        <label for="growthContribution">Contribution Amount ($)</label>
         <input type="number" id="growthContribution" class="styled-input" min="0" step="100" value="0" />
       </div>
+ <div class="input-group">
+ 	 <label for="growthFrequency">Contribution Frequency</label>
+  	<select id="growthFrequency" class="styled-input">
+   	 <option value="yearly" selected>Yearly</option>
+   	 <option value="monthly">Monthly</option>
+   	 <option value="biweekly">Biweekly</option>
+    	<option value="weekly">Weekly</option>
+ 	 </select>
+	</div>
+
       <div class="input-group">
         <label for="growthYears">Years</label>
         <input type="number" id="growthYears" class="styled-input" min="1" step="1" value="10" />
@@ -507,6 +517,9 @@
       <dd>The per‑share value of a fund’s underlying holdings after expenses. It is calculated as (assets – liabilities) ÷ shares outstanding.</dd>
       <dt><strong>Income Frequencies</strong></dt>
       <dd>Funds may distribute payments on different schedules: weekly, monthly, quarterly, semi‑annually or annually. Payment schedules affect the timing of income flows but not the total annual amount.</dd>
+      <dt><strong>Contribution Frequency</strong></dt>
+      <dd>Choose how often you plan to contribute to your portfolio: weekly, biweekly, monthly, or yearly. The tool adjusts your growth projection accordingly by converting all contributions to an annual total.</dd>
+
     </dl>
   </section>
 
@@ -908,32 +921,54 @@ if (!data || !data.Symbol) {
   });
 
   // Growth projection calculations
-  function calculateGrowthProjection(initial, annualContrib, years, includeDrip) {
-    const values = [];
-    let balance = initial;
-    // Weighted averages for CAGR and yield
-    let weightedCAGR = 0;
-    let weightedYield = 0;
-    holdings.forEach(h => {
-      const w = parseFloat(h.weight) / 100;
-      weightedCAGR += w * (parseFloat(h.cagr) || 0) / 100;
-      if (includeDrip && h.drip) weightedYield += w * h.yield;
-    });
-    const effectiveRate = weightedCAGR + weightedYield;
-    for (let i = 1; i <= years; i++) {
-      balance += annualContrib;
-      balance *= (1 + effectiveRate);
-      values.push({ year: i, value: parseFloat(balance.toFixed(2)) });
-    }
-    return values;
+  function calculateGrowthProjection(initial, contrib, years, includeDrip, frequency = 'yearly') {
+  const values = [];
+  let balance = initial;
+
+  // Weighted averages
+  let weightedCAGR = 0;
+  let weightedYield = 0;
+
+  holdings.forEach(h => {
+    const w = parseFloat(h.weight) / 100;
+    weightedCAGR += w * (parseFloat(h.cagr) || 0) / 100;
+    if (includeDrip && h.drip) weightedYield += w * h.yield;
+  });
+
+  const effectiveRate = weightedCAGR + weightedYield;
+
+  // Determine how many compounding periods per year
+  let periodsPerYear = 1;
+  switch (frequency) {
+    case 'monthly': periodsPerYear = 12; break;
+    case 'biweekly': periodsPerYear = 26; break;
+    case 'weekly': periodsPerYear = 52; break;
+    default: periodsPerYear = 1; break;
   }
+
+  const periodicRate = effectiveRate / periodsPerYear;
+  const periodicContrib = contrib / periodsPerYear;
+  const totalPeriods = years * periodsPerYear;
+
+  for (let i = 1; i <= totalPeriods; i++) {
+    balance = balance * (1 + periodicRate) + periodicContrib;
+    if (i % periodsPerYear === 0) {
+      values.push(balance.toFixed(2));
+    }
+  }
+
+  return values;
+}
+
 
   function renderGrowthChart() {
     // Use the current portfolio value from the income slider as the initial amount
     const initial = parseFloat(accountSlider.value) || 0;
     const contrib = parseFloat(document.getElementById('growthContribution').value) || 0;
     const years = parseInt(document.getElementById('growthYears').value) || 0;
-    const priceGrowth = calculateGrowthProjection(initial, contrib, years, false);
+    const freq = document.getElementById('growthFrequency').value;
+    const priceGrowth = calculateGrowthProjection(initial, contrib, years, false, freq);
+    const totalGrowth = calculateGrowthProjection(initial, contrib, years, true, freq);
     const totalGrowth = calculateGrowthProjection(initial, contrib, years, true);
     const labels = priceGrowth.map(d => `Year ${d.year}`);
     const priceData = priceGrowth.map(d => d.value);
@@ -1021,6 +1056,7 @@ if (!data || !data.Symbol) {
 
   document.getElementById('growthContribution').addEventListener('input', updateGrowthChart);
   document.getElementById('growthYears').addEventListener('input', updateGrowthChart);
+  document.getElementById('growthFrequency').addEventListener('change', updateGrowthChart);
   document.getElementById('toggleGrowthChart').addEventListener('click', () => {
     chartType = chartType === 'bar' ? 'line' : 'bar';
     document.getElementById('toggleGrowthChart').textContent = chartType === 'bar' ? 'Switch to Line Chart' : 'Switch to Bar Chart';
