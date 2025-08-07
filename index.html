@@ -490,6 +490,10 @@
         <label for="growthYears">Years</label>
         <input type="number" id="growthYears" class="styled-input" min="1" step="1" value="10" />
       </div>
+<div class="input-group" style="margin-top:0.5rem;">
+  <label><strong>Weighted Annual Return:</strong></label>
+  <span id="weightedAnnualReturn" style="font-weight:bold; color:#4cc9f0; margin-left:0.5rem;">0.00%</span>
+</div>
     </div>
     <button id="toggleGrowthChart" class="btn" style="margin-top:1rem;">Switch to Line Chart</button>
     <!-- Smaller chart height for better fit on screen -->
@@ -536,7 +540,7 @@
   <footer style="margin:2rem; text-align:center; color: var(--muted-text); font-size:0.85rem;">
     <p>© 2025 JoshDisciple. This tool is for educational purposes only and does not constitute financial advice.</p>
     <p>Created by <a href="https://twitter.com/JoshDisciple" target="_blank" style="color: var(--accent);">@JoshDisciple</a></p>
-	<p>Version: 1.1 | Release Date: Aug 6, 2025</p>
+	<p>Version: 1.1.2 | Release Date: Aug 7, 2025</p>
 	<p>Support me on <a href="https://www.patreon.com/c/JoshDisciple"> Patreon<a/></p>
   </footer>
 
@@ -946,7 +950,8 @@ if (!data || !data.Symbol) {
     balance *= (1 + effectiveRate);
     values.push({ year: i, value: parseFloat(balance.toFixed(2)) });
   }
-  return values;
+  // Return both values and effectiveRate
+  return { values, effectiveRate };
 }
 
 
@@ -956,12 +961,19 @@ if (!data || !data.Symbol) {
     const contrib = parseFloat(document.getElementById('growthContribution').value) || 0;
     const years = parseInt(document.getElementById('growthYears').value) || 0;
     const freq = document.getElementById('growthFrequency').value;
-	const priceGrowth = calculateGrowthProjection(initial, contrib, years, false, freq);
-	const totalGrowth = calculateGrowthProjection(initial, contrib, years, true, freq);
-    const labels = priceGrowth.map(d => `Year ${d.year}`);
-    const priceData = priceGrowth.map(d => d.value);
-    const totalData = totalGrowth.map(d => d.value);
+	const priceGrowthObj = calculateGrowthProjection(initial, contrib, years, false, freq);
+  const totalGrowthObj = calculateGrowthProjection(initial, contrib, years, true, freq);
+
+  const labels = priceGrowthObj.values.map(d => `Year ${d.year}`);
+  const priceData = priceGrowthObj.values.map(d => d.value);
+  const totalData = totalGrowthObj.values.map(d => d.value);
     const ctx = document.getElementById('growthChart').getContext('2d');
+	const weightedAnnualReturn = totalGrowthObj.effectiveRate * 100; // as percent
+  document.getElementById('weightedAnnualReturn').textContent = weightedAnnualReturn.toFixed(2) + "%";
+	
+	
+	
+	
     if (growthChartInstance) growthChartInstance.destroy();
     growthChartInstance = new Chart(ctx, {
       type: chartType,
