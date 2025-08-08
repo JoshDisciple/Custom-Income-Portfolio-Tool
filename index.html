@@ -206,6 +206,8 @@
     @media (max-width: 600px) {
       .input-row { flex-direction: column; }
       .income-summary { flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+      #settingsDropdown { min-width: 160px; right: 0; left: auto; }
+      section[style*="display: flex"] { flex-direction: column !important; }
     }
 
   /* Custom styling for the portfolio value range slider to better match the theme */
@@ -311,14 +313,22 @@
         <small style="color: var(--muted-text);">Plan &amp; track your personalised income portfolio</small>
       </div>
       <nav>
-        <a href="#overview">Overview</a>
+        <a href="#overview">Overview & Glossary</a>
         <a href="#weights">Category Weights</a>
         <a href="#holdings">Holdings</a>
         <a href="#contribution">Contribute</a>
         <a href="#income-calc">Income</a>
         <a href="#growth">Growth</a>
-		<a href="#glossary">Glossary</a>
-        <a href="#settings">Settings</a>
+        <div style="position:relative;display:inline-block;">
+    <button id="settingsDropdownBtn" class="btn" type="button">Settings ▼</button>
+    <div id="settingsDropdown" style="display:none;position:absolute;right:0;top:110%;background:var(--card-bg);border:1px solid var(--border-colour);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.25);padding:1rem;z-index:2000;min-width:220px;">
+      <p style="margin:0 0 0.5rem 0;font-weight:600;">Settings</p>
+      <button id="exportBtn" class="btn" style="width:100%;margin-bottom:0.5rem;">Export Configuration</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none;" />
+      <button id="importBtn" class="btn" style="width:100%;margin-bottom:0.5rem;">Import Configuration</button>
+      <button id="themeToggle" class="btn" style="width:100%;">Toggle Light/Dark Mode</button>
+    </div>
+  </div>
       </nav>
     </div>
   </header>
@@ -326,18 +336,54 @@
   <!-- Tooltip placeholder; content filled by JS -->
   <div id="tooltip" class="tooltip"></div>
 
-  <!-- Overview section -->
-  <section class="card" id="overview">
+  <!-- Overview and Glossary side by side -->
+<section style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: stretch; margin: 1.5rem;">
+  <div class="card" id="overview" style="flex: 1 1 350px; min-width: 300px;">
     <h2>1. Overview</h2>
     <p>This tool helps you design a personalised income‑oriented portfolio. Add your holdings, specify weights, set payment schedules and see how your money could work for you over time. The income and growth projections update on the fly as you make adjustments.</p>
-	<p><strong>Fetch Data:</strong> You can retrieve basic fund data using the API by entering a valid ticker symbol (e.g., <code>SCHD</code>) and clicking "Fetch". This will attempt to auto-fill the name, yield, CAGR, and expense ratio if available. You may still edit or overwrite the values manually before adding. The API currently only supports tickers that coincide with single stocks.
-</p>
-
-  </section>
+    <p><strong>Fetch Data:</strong> You can retrieve basic fund data using the API by entering a valid ticker symbol (e.g., <code>SCHD</code>) and clicking "Fetch". This will attempt to auto-fill the name, yield, <b>average annual growth rate</b>, and expense ratio if available. You may still edit or overwrite the values manually before adding. The API currently only supports tickers that coincide with single stocks.</p>
+    <h3 style="margin-top:0;">How to Use</h3>
+    <ol style="margin-bottom:1rem;">
+      <li><strong>Add Holdings:</strong> Enter fund details or fetch them by ticker, then click <b>Add</b>.</li>
+      <li><strong>Adjust Weights:</strong> Set your desired allocation for each holding. The total must not exceed 100%.</li>
+      <li><strong>Contribution Allocator:</strong> Enter a lump sum to see how it would be distributed across your holdings.</li>
+      <li><strong>Income Calculator:</strong> Use the slider to estimate annual, quarterly, and monthly income based on your portfolio value.</li>
+      <li><strong>Growth Projection:</strong> Model how your portfolio could grow over time with contributions and reinvestment.</li>
+      <li><strong>Settings:</strong> Use the Settings menu (top right) to export, import, or change the theme.</li>
+    </ol>
+    <ul style="margin-bottom:0.5rem;">
+      <li>Supports <b>DRIP</b> (dividend reinvestment) toggles per holding</li>
+      <li>Shows both per-holding and per-asset-class income breakdowns</li>
+      <li>Visualise allocations with a pie chart or table</li>
+      <li>All data is stored locally in your browser for privacy</li>
+    </ul>
+  </div>
+  <div class="card" id="glossary" style="flex: 1 1 350px; min-width: 300px;">
+    <h2>2. Glossary &amp; Definitions</h2>
+    <dl style="margin-top:1rem;">
+      <dt><strong>Distribution Rate (Yield)</strong></dt>
+      <dd>The annualised distribution (dividend) rate expressed as a percentage of the fund’s value. A 3.9% yield means the fund pays distributions equal to 3.9% of its value each year.</dd>
+      <dt><strong>Average Annual Growth Rate</strong></dt>
+      <dd>The average yearly increase in value of an investment over a specified period, expressed as a percentage. It reflects the mean annual rate at which an investment has grown, not accounting for compounding, and is useful for comparing the historical performance of different assets.</dd>
+      <dt><strong>Expense Ratio</strong></dt>
+      <dd>The annual fee that funds charge to cover operating expenses, expressed as a percentage of assets. Lower expense ratios mean more of your money remains invested.</dd>
+      <dt><strong>DRIP (Dividend Reinvestment Plan)</strong></dt>
+      <dd>A setting that automatically reinvests distributions back into the holding rather than paying them out. Enabling DRIP can accelerate growth through compounding.</dd>
+      <dt><strong>Yield on Cost</strong></dt>
+      <dd>The current annual income divided by the total amount originally invested. It shows how the income compares to your cost basis.</dd>
+      <dt><strong>Weighted Distribution Yield</strong></dt>
+      <dd>The sum of each holding’s distribution yield weighted by its portfolio weight. It reflects the overall distribution rate of the portfolio.</dd>
+      <dt><strong>NAV (Net Asset Value)</strong></dt>
+      <dd>The per‑share value of a fund’s underlying holdings after expenses. It is calculated as (assets – liabilities) ÷ shares outstanding.</dd>
+      <dt><strong>Income Frequencies</strong></dt>
+      <dd>Funds may distribute payments on different schedules: weekly, monthly, quarterly, semi‑annually or annually. Payment schedules affect the timing of income flows but not the total annual amount.</dd>
+    </dl>
+  </div>
+</section>
 
   <!-- Category weights section -->
   <section class="card" id="weights">
-    <h2>2. Category Weights</h2>
+    <h2>3. Category Weights</h2>
     <p>The table below aggregates your holdings by asset class.  Whenever you add or remove a holding, these totals update automatically.  If you prefer a visual breakdown, toggle the chart view in the holdings section.</p>
     <table>
       <thead><tr><th>Asset Class</th><th>Total Weight</th></tr></thead>
@@ -348,7 +394,7 @@
   <!-- Holdings section with dynamic inputs -->
   <section class="card" id="holdings">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
-      <h2 style="margin:0;">3. Holdings</h2>
+      <h2 style="margin:0;">4. Holdings</h2>
       <button id="toggleHoldingsView" class="btn">Switch to Pie Chart</button>
     </div>
     <p>Add positions to your portfolio.  Enter fund metrics manually or attempt to fetch them automatically.</p>
@@ -374,7 +420,7 @@
         <input type="number" id="newYield" class="styled-input" min="0" step="0.0001" placeholder="0.0389" />
       </div>
       <div class="input-group">
-        <label for="newCAGR">CAGR (%)</label>
+        <label for="newCAGR">Average Annual Growth Rate (%)</label>
         <input type="number" id="newCAGR" class="styled-input" min="0" step="0.1" placeholder="10" />
       </div>
       <div class="input-group">
@@ -406,7 +452,7 @@
     <th data-sort="class"><span>Class</span></th>
     <th data-sort="weight"><span>Weight (%)</span></th>
     <th data-sort="yield"><span>Yield</span></th>
-    <th data-sort="cagr"><span>CAGR</span></th>
+    <th data-sort="cagr"><span>Avg Annual Growth (%)</span></th>
     <th data-sort="expense"><span>Expense</span></th>
     <th data-sort="schedule"><span>Schedule</span></th>
     <th>DRIP</th>
@@ -425,7 +471,7 @@
 
   <!-- Contribution allocator -->
   <section class="card" id="contribution">
-    <h2>4. Contribution Allocator</h2>
+    <h2>5. Contribution Allocator</h2>
     <p>Allocate a lump sum according to your target weights. Enter an amount and see how much goes to each holding.</p>
     <div class="input-group" style="max-width:200px;">
       <label for="contributionInput">Contribution Amount ($)</label>
@@ -436,7 +482,7 @@
 
   <!-- Income calculator -->
   <section class="card" id="income-calc">
-    <h2>5. Income Calculator</h2>
+    <h2>6. Income Calculator</h2>
     <!-- Allow the slider to span the full width of the card for fine‑tuned adjustments -->
     <div class="input-group" style="width:100%;">
       <label for="accountSlider">Portfolio Value (<span id="sliderVal">$0</span>)</label>
@@ -462,7 +508,7 @@
 
   <!-- Growth projection -->
   <section class="card" id="growth">
-    <h2>6. Growth &amp; Income Projection</h2>
+    <h2>7. Growth &amp; Income Projection</h2>
     <p>Estimate how your portfolio may grow over time. The model supports both price growth (CAGR only) and total growth including reinvested distributions for holdings where DRIP is enabled. Adjust your starting amount, annual contributions and desired timeframe.</p>
     <div class="input-row">
       <!-- Show the portfolio value from the Income Calculator as the initial amount; no editing here -->
@@ -500,47 +546,13 @@
     <canvas id="growthChart" height="250" style="margin-top:1rem; max-width:100%; max-height:250px;"></canvas>
   </section>
 
-<!-- Glossary / Definitions -->
-  <section class="card" id="glossary">
-    <h2>7. Glossary &amp; Definitions</h2>
-    <p>Use this glossary to familiarise yourself with the terms used throughout this tool. Understanding these concepts will help you make more informed decisions when constructing your income portfolio.</p>
-    <dl style="margin-top:1rem;">
-      <dt><strong>Distribution Rate (Yield)</strong></dt>
-      <dd>The annualised distribution (dividend) rate expressed as a percentage of the fund’s value. A 3.9% yield means the fund pays distributions equal to 3.9% of its value each year.</dd>
-      <dt><strong>CAGR (Compound Annual Growth Rate)</strong></dt>
-      <dd>The mean annual growth rate of an investment over a specified time horizon longer than one year, assuming profits are reinvested at the end of each period.</dd>
-      <dt><strong>Expense Ratio</strong></dt>
-      <dd>The annual fee that funds charge to cover operating expenses, expressed as a percentage of assets. Lower expense ratios mean more of your money remains invested.</dd>
-      <dt><strong>DRIP (Dividend Reinvestment Plan)</strong></dt>
-      <dd>A setting that automatically reinvests distributions back into the holding rather than paying them out. Enabling DRIP can accelerate growth through compounding.</dd>
-      <dt><strong>Yield on Cost</strong></dt>
-      <dd>The current annual income divided by the total amount originally invested. It shows how the income compares to your cost basis.</dd>
-      <dt><strong>Weighted Distribution Yield</strong></dt>
-      <dd>The sum of each holding’s distribution yield weighted by its portfolio weight. It reflects the overall distribution rate of the portfolio.</dd>
-      <dt><strong>NAV (Net Asset Value)</strong></dt>
-      <dd>The per‑share value of a fund’s underlying holdings after expenses. It is calculated as (assets – liabilities) ÷ shares outstanding.</dd>
-      <dt><strong>Income Frequencies</strong></dt>
-      <dd>Funds may distribute payments on different schedules: weekly, monthly, quarterly, semi‑annually or annually. Payment schedules affect the timing of income flows but not the total annual amount.</dd>
-    </dl>
-  </section>
 
-  <!-- Settings & Import/Export -->
-  <section class="card" id="settings">
-    <h2>8. Settings</h2>
-    <p>You can save your current portfolio setup to a file and restore it later.  To back up your configuration, click Export.  To load a saved file, select it and click Import.</p>
-    <div style="margin-top:1rem; display:flex; flex-wrap:wrap; gap:1rem;">
-      <button id="exportBtn" class="btn">Export Configuration</button>
-      <input type="file" id="importFile" accept="application/json" style="display:none;" />
-      <button id="importBtn" class="btn">Import Configuration</button>
-      <button id="themeToggle" class="btn">Toggle Light/Dark Mode</button>
-    </div>
-  </section>
 
   <!-- Footer -->
   <footer style="margin:2rem; text-align:center; color: var(--muted-text); font-size:0.85rem;">
     <p>© 2025 JoshDisciple. This tool is for educational purposes only and does not constitute financial advice.</p>
     <p>Created by <a href="https://twitter.com/JoshDisciple" target="_blank" style="color: var(--accent);">@JoshDisciple</a></p>
-	<p>Version: 1.1.2 | Release Date: Aug 7, 2025</p>
+	<p>Version: 1.1.3 | Release Date: Aug 8, 2025</p>
 	<p>Support me on <a href="https://www.patreon.com/c/JoshDisciple"> Patreon<a/></p>
   </footer>
 
@@ -622,7 +634,7 @@
     holdingsBody.innerHTML = '';
     holdings.forEach((h, index) => {
       const tr = document.createElement('tr');
-      tr.dataset.tooltip = `Yield: ${(h.yield * 100).toFixed(2)}%\nExpense: ${h.expense}%\nCAGR: ${h.cagr}%`;
+      tr.dataset.tooltip = `Yield: ${(h.yield * 100).toFixed(2)}%\nExpense: ${h.expense}%\nAvg Annual Growth: ${h.cagr}%`;
       tr.innerHTML = `
         <td>${h.name}</td>
         <td><a href="https://finance.yahoo.com/quote/${h.ticker}" target="_blank">${h.ticker}</a></td>
@@ -684,7 +696,7 @@ if (!data || !data.Symbol) {
     if (data.Name) document.getElementById('newName').value = data.Name;
     if (data.AssetType) document.getElementById('newClass').value = data.AssetType;
     if (data.DividendYield) document.getElementById('newYield').value = (parseFloat(data.DividendYield) || 0).toFixed(4);
-    if (data.ReturnOnEquityTTM) document.getElementById('newCAGR').value = (parseFloat(data.ReturnOnEquityTTM) || 0).toFixed(2);
+    if (data.ReturnOnEquityTTM) document.getElementById('newCAGR').value = (parseFloat(data.ReturnOnEquityTTM) || 0).toFixed(2); // Used as average annual growth rate
     if (data.ExpenseRatio) document.getElementById('newExpense').value = (parseFloat(data.ExpenseRatio) || 0).toFixed(2);
   } catch (err) {
     console.error(err);
@@ -926,7 +938,7 @@ if (!data || !data.Symbol) {
   const values = [];
   let balance = initial;
 
-  // Weighted averages for CAGR and yield
+  // Weighted averages for average annual growth rate and yield
   let weightedCAGR = 0;
   let weightedYield = 0;
   holdings.forEach(h => {
@@ -981,7 +993,7 @@ if (!data || !data.Symbol) {
         labels: labels,
         datasets: [
           {
-            label: 'Price Growth (CAGR only)',
+            label: 'Price Growth (Avg Annual Growth Only)',
             data: priceData,
             backgroundColor: chartType === 'bar' ? 'rgba(253, 208, 0, 0.6)' : 'transparent',
             borderColor: 'rgba(253, 208, 0, 1)',
@@ -994,7 +1006,7 @@ if (!data || !data.Symbol) {
             pointHoverRadius: chartType === 'bar' ? 0 : 5
           },
           {
-            label: 'Total Growth (CAGR + DRIP)',
+            label: 'Total Growth (Avg Annual Growth + DRIP)',
             data: totalData,
             backgroundColor: chartType === 'bar' ? 'rgba(76, 201, 240, 0.6)' : 'transparent',
             borderColor: 'rgba(76, 201, 240, 1)',
@@ -1315,6 +1327,18 @@ function updateSortIndicators() {
 });
 
 document.getElementById('fetchMetrics').addEventListener('click', fetchMetrics);
+
+
+// Settings dropdown logic
+const settingsBtn = document.getElementById('settingsDropdownBtn');
+const settingsDropdown = document.getElementById('settingsDropdown');
+document.addEventListener('click', function(e) {
+  if (settingsBtn.contains(e.target)) {
+    settingsDropdown.style.display = settingsDropdown.style.display === 'block' ? 'none' : 'block';
+  } else if (!settingsDropdown.contains(e.target)) {
+    settingsDropdown.style.display = 'none';
+  }
+});
 
 
     loadHoldings();
