@@ -25,6 +25,8 @@
       --hover-bg: #2e3e66;
       --border-colour: #324877;
       --tooltip-bg: rgba(14, 21, 37, 0.95);
+    --table-header-bg: #25304d;
+    --table-header-text: #4cc9f0;
     }
     .light-mode {
       --bg-colour: #f5f7fa;
@@ -35,8 +37,28 @@
       --hover-bg: #e8f0fe;
       --border-colour: #d1d9e6;
       --tooltip-bg: rgba(255, 255, 255, 0.95);
+    --table-header-bg: #dbeafe;
+    --table-header-text: #0077b6;
     }
     * { box-sizing: border-box; }
+    /* Custom scrollbar for breakdown modal */
+    .growth-breakdown-scroll {
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent) var(--card-bg);
+    }
+    .growth-breakdown-scroll::-webkit-scrollbar {
+      width: 10px;
+      background: var(--card-bg);
+      border-radius: 8px;
+    }
+    .growth-breakdown-scroll::-webkit-scrollbar-thumb {
+      background: var(--accent);
+      border-radius: 8px;
+      border: 2px solid var(--card-bg);
+    }
+    .growth-breakdown-scroll::-webkit-scrollbar-thumb:hover {
+      background: var(--hover-bg);
+    }
     body {
       margin: 0;
       padding: 0;
@@ -60,8 +82,24 @@
       background-color: var(--bg-colour);
       border-bottom: 1px solid var(--border-colour);
       padding: 1rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
+      }
+
+      /* Sticky table header for breakdown table */
+      .growth-breakdown-scroll {
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+      .sticky-th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    background: var(--table-header-bg, #2e3e66);
+    color: var(--table-header-text, var(--accent));
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      }
+      .sticky-th.second-row {
+        top: 38px;
+      }
     .header-row {
       display: flex;
       justify-content: space-between;
@@ -98,13 +136,16 @@
     }
     th, td {
       padding: 0.6rem;
-      border-bottom: 1px solid var(--border-colour);
-      text-align: left;
-      font-size: 0.9rem;
+  border-bottom: 1px solid var(--border-colour);
+  text-align: left;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
     }
     th {
-      background-color: var(--hover-bg);
-      color: var(--text-colour);
+    background-color: var(--table-header-bg);
+    color: var(--table-header-text);
     }
     tr:hover:not(thead tr) { background-color: var(--hover-bg); cursor: pointer; }
     .input-row {
@@ -336,6 +377,7 @@
   <!-- Tooltip placeholder; content filled by JS -->
   <div id="tooltip" class="tooltip"></div>
 
+
   <!-- Overview and Glossary side by side -->
 <section style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: stretch; margin: 1.5rem;">
   <div class="card" id="overview" style="flex: 1 1 350px; min-width: 300px;">
@@ -369,8 +411,6 @@
       <dd>The annual fee that funds charge to cover operating expenses, expressed as a percentage of assets. Lower expense ratios mean more of your money remains invested.</dd>
       <dt><strong>DRIP (Dividend Reinvestment Plan)</strong></dt>
       <dd>A setting that automatically reinvests distributions back into the holding rather than paying them out. Enabling DRIP can accelerate growth through compounding.</dd>
-      <dt><strong>Yield on Cost</strong></dt>
-      <dd>The current annual income divided by the total amount originally invested. It shows how the income compares to your cost basis.</dd>
       <dt><strong>Weighted Distribution Yield</strong></dt>
       <dd>The sum of each holding’s distribution yield weighted by its portfolio weight. It reflects the overall distribution rate of the portfolio.</dd>
       <dt><strong>NAV (Net Asset Value)</strong></dt>
@@ -416,8 +456,8 @@
         <input type="number" id="newWeight" class="styled-input" min="0" step="0.1" placeholder="0" />
       </div>
       <div class="input-group">
-        <label for="newYield">Distribution Rate (Yield)</label>
-        <input type="number" id="newYield" class="styled-input" min="0" step="0.0001" placeholder="0.0389" />
+  <label for="newYield">Distribution Rate (Yield %)</label>
+  <input type="number" id="newYield" class="styled-input" min="0" step="0.01" placeholder="3.89" />
       </div>
       <div class="input-group">
         <label for="newCAGR">Average Annual Growth Rate (%)</label>
@@ -461,6 +501,7 @@
 </thead>
 
         <tbody id="holdingsBody"></tbody>
+        <tfoot id="holdingsTotals"></tfoot>
       </table>
     </div>
     <!-- Container for the pie chart of holdings -->
@@ -483,6 +524,14 @@
   <!-- Income calculator -->
   <section class="card" id="income-calc">
     <h2>6. Income Calculator</h2>
+<p>This calculator provides a <strong>theoretical estimate</strong> of your portfolio’s income based on a constant weighted average distribution yield. The yield is automatically calculated from your holdings in the portfolio section, while you can adjust the current portfolio value using the slider (in $1,000 increments) to explore different scenarios. The display includes:</p>
+<ul>
+  <li><strong>Annual, Quarterly, and Monthly Income</strong></li>
+  <li><strong>Income by Holding</strong> – individual security breakdown</li>
+  <li><strong>Income by Asset Class</strong> – category-level breakdown</li>
+</ul>
+<p>Results are for illustrative purposes only and do not represent actual or guaranteed income.</p>
+
     <!-- Allow the slider to span the full width of the card for fine‑tuned adjustments -->
     <div class="input-group" style="width:100%;">
       <label for="accountSlider">Portfolio Value (<span id="sliderVal">$0</span>)</label>
@@ -490,7 +539,6 @@
       <input type="range" id="accountSlider" min="0" max="2000000" step="1000" value="0" />
     </div>
     <div style="margin-top:0.5rem;">
-      <strong>Yield on Cost:</strong> <span id="yieldOnCost">0.00%</span> | 
       <strong>Weighted Distribution Yield:</strong> <span id="weightedYield">0.00%</span>
     </div>
     <div class="result-box" style="margin-top:1rem;font-size:1.1rem;">
@@ -509,41 +557,61 @@
   <!-- Growth projection -->
   <section class="card" id="growth">
     <h2>7. Growth &amp; Income Projection</h2>
-    <p>Estimate how your portfolio may grow over time. The model supports both price growth (CAGR only) and total growth including reinvested distributions for holdings where DRIP is enabled. Adjust your starting amount, annual contributions and desired timeframe.</p>
+<p>This chart provides a <strong>theoretical projection</strong> of how your portfolio might grow over time based on a constant weighted average annual return. The starting amount and return rate are automatically calculated from your inputs in other sections of the portfolio tool. The projection includes:</p>
+<ul>
+  <li><strong>Total Contributions</strong></li>
+  <li><strong>Price Growth</strong> – average annual growth only</li>
+  <li><strong>Total Growth</strong> – average annual growth plus reinvested distributions (DRIP)</li>
+</ul>
+<p>You can adjust your contribution amount, contribution frequency, and number of years to see different scenarios. Results are for illustrative purposes only and do not represent actual or guaranteed performance.</p>
     <div class="input-row">
       <!-- Show the portfolio value from the Income Calculator as the initial amount; no editing here -->
-      <div class="input-group">
-        <label>Initial ($)</label>
-        <div id="growthInitialDisplay" class="styled-input" style="background-color: transparent; border: none; padding-top: 0.5rem;">
-          $0
+      <div style="display: flex; flex-wrap: wrap; gap: 1.2rem; width: 100%; align-items: flex-end;">
+  <div class="input-group" style="min-width: 110px;">
+          <label>Initial ($)</label>
+          <div id="growthInitialDisplay" class="styled-input" style="background-color: transparent; border: none; padding-top: 0.5rem;">
+            $0
+          </div>
+        </div>
+  <div class="input-group" style="min-width: 140px;">
+          <label for="growthContribution">Contribution Amount($)</label>
+          <input type="number" id="growthContribution" class="styled-input" min="0" step="100" value="0" />
+        </div>
+  <div class="input-group" style="min-width: 130px;">
+          <label for="growthFrequency">Contribution Frequency</label>
+          <select id="growthFrequency" class="styled-input">
+            <option value="yearly" selected>Yearly</option>
+            <option value="monthly">Monthly</option>
+            <option value="biweekly">Biweekly</option>
+            <option value="weekly">Weekly</option>
+          </select>
+        </div>
+  <div class="input-group" style="min-width: 90px;">
+          <label for="growthYears">Years</label>
+          <input type="number" id="growthYears" class="styled-input" min="1" step="1" value="10" />
+        </div>
+        <div style="display:flex; align-items:center; gap:1.2rem; flex-wrap:wrap; margin-top:0.5rem;">
+          <div class="input-group" style="min-width: 120px; align-items: flex-start;">
+            <label for="weightedAnnualReturnNoDrip" style="margin-bottom:0.25rem; color: var(--muted-text); font-size: 0.75rem; white-space:nowrap;">Weighted Annual Return (No DRIP)</label>
+            <span id="weightedAnnualReturnNoDrip" style="font-weight:bold; color:#fdd000; font-size:1.05rem;">0.00%</span>
+          </div>
+          <div class="input-group" style="min-width: 120px; align-items: flex-start;">
+            <label for="weightedAnnualReturnWithDrip" style="margin-bottom:0.25rem; color: var(--muted-text); font-size: 0.75rem; white-space:nowrap;">Weighted Annual Return (With DRIP)</label>
+            <span id="weightedAnnualReturnWithDrip" style="font-weight:bold; color:#4cc9f0; font-size:1.05rem;">0.00%</span>
+          </div>
         </div>
       </div>
-      <div class="input-group">
-        <label for="growthContribution">Contribution Amount($)</label>
-        <input type="number" id="growthContribution" class="styled-input" min="0" step="100" value="0" />
-      </div>
-<div class="input-group">
-  <label for="growthFrequency">Contribution Frequency</label>
-  <select id="growthFrequency" class="styled-input">
-    <option value="yearly" selected>Yearly</option>
-    <option value="monthly">Monthly</option>
-    <option value="biweekly">Biweekly</option>
-    <option value="weekly">Weekly</option>
-  </select>
-</div>
-
-      <div class="input-group">
-        <label for="growthYears">Years</label>
-        <input type="number" id="growthYears" class="styled-input" min="1" step="1" value="10" />
-      </div>
-<div class="input-group" style="margin-top:0.5rem;">
-  <label><strong>Weighted Annual Return:</strong></label>
-  <span id="weightedAnnualReturn" style="font-weight:bold; color:#4cc9f0; margin-left:0.5rem;">0.00%</span>
-</div>
     </div>
-    <button id="toggleGrowthChart" class="btn" style="margin-top:1rem;">Switch to Line Chart</button>
+    <div style="display:flex; gap:0.75rem; margin-top:1rem;">
+  <button id="toggleGrowthChart" class="btn" style="margin-top:0;">Switch to Line Chart</button>
+  <button id="showGrowthBreakdownBtn" class="btn" style="margin-top:0;">Show Yearly Breakdown Table</button>
+    </div>
     <!-- Smaller chart height for better fit on screen -->
-    <canvas id="growthChart" height="250" style="margin-top:1rem; max-width:100%; max-height:250px;"></canvas>
+    <div style="width:100%; display:flex; justify-content:center;">
+      <div style="width:100%; display:flex; justify-content:center;">
+  <canvas id="growthChart" height="320" style="margin-top:1rem; max-width: min(90vw, 1100px); width:100%; max-height:320px; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.10); background: var(--card-bg); padding: 8px;"></canvas>
+      </div>
+    </div>
   </section>
 
 
@@ -552,7 +620,7 @@
   <footer style="margin:2rem; text-align:center; color: var(--muted-text); font-size:0.85rem;">
     <p>© 2025 JoshDisciple. This tool is for educational purposes only and does not constitute financial advice.</p>
     <p>Created by <a href="https://twitter.com/JoshDisciple" target="_blank" style="color: var(--accent);">@JoshDisciple</a></p>
-	<p>Version: 1.1.3 | Release Date: Aug 8, 2025</p>
+	<p>Version: 1.1.4 | Release Date: Aug 9, 2025</p>
 	<p>Support me on <a href="https://www.patreon.com/c/JoshDisciple"> Patreon<a/></p>
   </footer>
 
@@ -562,7 +630,7 @@
       <strong>Summary:</strong> Annual Income: <span id="summaryAnnual">$0</span> | Quarterly: <span id="summaryQuarter">$0</span> | Monthly: <span id="summaryMonthly">$0</span>
     </div>
     <div>
-      Total Portfolio: <span id="summaryPortfolio">$0</span>
+      Total Portfolio: <span id="summaryPortfolio">$0</span> | Annual Fees: <span id="summaryAnnualFees">$0</span>
     </div>
   </div>
 
@@ -605,7 +673,6 @@
   const summaryQuarter = document.getElementById('summaryQuarter');
   const summaryMonthly = document.getElementById('summaryMonthly');
   const summaryPortfolio = document.getElementById('summaryPortfolio');
-  const yieldOnCostSpan = document.getElementById('yieldOnCost');
   const weightedYieldSpan = document.getElementById('weightedYield');
   const detailedIncomeDiv = document.getElementById('detailedIncomeBreakdown');
   const tooltipDiv = document.getElementById('tooltip');
@@ -634,13 +701,13 @@
     holdingsBody.innerHTML = '';
     holdings.forEach((h, index) => {
       const tr = document.createElement('tr');
-      tr.dataset.tooltip = `Yield: ${(h.yield * 100).toFixed(2)}%\nExpense: ${h.expense}%\nAvg Annual Growth: ${h.cagr}%`;
+      tr.dataset.tooltip = `Yield: ${h.yield.toFixed(2)}%\nExpense: ${h.expense}%\nAvg Annual Growth: ${h.cagr}%`;
       tr.innerHTML = `
         <td>${h.name}</td>
         <td><a href="https://finance.yahoo.com/quote/${h.ticker}" target="_blank">${h.ticker}</a></td>
         <td>${h.class}</td>
-        <td>${parseFloat(h.weight).toFixed(2)}</td>
-        <td>${(h.yield * 100).toFixed(2)}%</td>
+        <td>${parseFloat(h.weight).toFixed(2)}%</td>
+        <td>${h.yield.toFixed(2)}%</td>
         <td>${parseFloat(h.cagr).toFixed(2)}%</td>
         <td>${parseFloat(h.expense).toFixed(2)}%</td>
         <td>${h.schedule}</td>
@@ -652,58 +719,41 @@
       `;
       holdingsBody.appendChild(tr);
     });
+    renderHoldingsTotals();
     attachRowEvents();
   }
-  
-  //API Fetch function
-  
-  let canFetch = true;
-  
- async function fetchMetrics() {
- if (!canFetch) {
-  showCustomAlert("Please wait 15 seconds between fetch requests.");
-  return;
-}
 
-  const ticker = document.getElementById('newTicker').value.trim().toUpperCase();
-  if (!ticker) {
-    showCustomAlert("Please enter a ticker symbol first.");
+  function renderHoldingsTotals() {
+  const totalsRow = document.getElementById('holdingsTotals');
+  if (!totalsRow) return;
+  if (!holdings.length) {
+    totalsRow.innerHTML = '';
     return;
   }
-  
-  canFetch = false;
-setTimeout(() => { canFetch = true; }, 15000); // 15 sec timer
-
-
-  try {
-    // Use Yahoo Finance via RapidAPI or fallback (adjust as needed for Alpha Vantage if they support ratios)
-    const url = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${ticker}&apikey=${API_KEY}`;
-    const res = await fetch(url);
-    const data = await res.json();
-
-    if (data.Note) {
-  showCustomAlert("API limit reached. Please wait a minute before trying again.");
-  return;
+  // Weighted averages
+  let totalWeight = 0;
+  let weightedYield = 0;
+  let weightedCagr = 0;
+  let weightedExpense = 0;
+  holdings.forEach(h => {
+    const weight = parseFloat(h.weight) / 100;
+    totalWeight += parseFloat(h.weight);
+    weightedYield += weight * (h.yield);
+    weightedCagr += weight * (h.cagr);
+    weightedExpense += weight * (h.expense);
+  });
+  // Format row
+  totalsRow.innerHTML = `
+    <tr style="background: var(--hover-bg); font-weight: bold;">
+      <td colspan="3" style="text-align:right;">Weighted Totals:</td>
+      <td>${totalWeight.toFixed(2)}</td>
+      <td>${weightedYield.toFixed(2)}%</td>
+      <td>${weightedCagr.toFixed(2)}%</td>
+      <td>${weightedExpense.toFixed(2)}%</td>
+      <td colspan="3"></td>
+    </tr>
+  `;
 }
-
-if (!data || !data.Symbol) {
-  showCustomAlert("No data found for that ticker. You may need to enter values manually.");
-  return;
-}
-
-
-    // Populate fields if available
-    if (data.Name) document.getElementById('newName').value = data.Name;
-    if (data.AssetType) document.getElementById('newClass').value = data.AssetType;
-    if (data.DividendYield) document.getElementById('newYield').value = (parseFloat(data.DividendYield) || 0).toFixed(4);
-    if (data.ReturnOnEquityTTM) document.getElementById('newCAGR').value = (parseFloat(data.ReturnOnEquityTTM) || 0).toFixed(2); // Used as average annual growth rate
-    if (data.ExpenseRatio) document.getElementById('newExpense').value = (parseFloat(data.ExpenseRatio) || 0).toFixed(2);
-  } catch (err) {
-    console.error(err);
-    showCustomAlert("Failed to fetch data. Try again later or enter manually.");
-  }
-}
-
 
   // Attach events for tooltips and interactions
   function attachRowEvents() {
@@ -808,14 +858,13 @@ if (!data || !data.Symbol) {
     sliderValSpan.textContent = `$${Number(portfolio).toLocaleString()}`;
     let annual = 0;
     let weightedYield = 0;
-    let costYield = 0;
     holdings.forEach(h => {
       const weight = parseFloat(h.weight) / 100;
       const value = portfolio * weight;
-      const income = value * h.yield;
+      // Convert percent to decimal for calculation
+      const income = value * (h.yield / 100);
       annual += income;
-      weightedYield += weight * h.yield;
-      costYield += weight * h.yield; // yield on cost identical here since cost basis unknown
+      weightedYield += weight * (h.yield / 100);
     });
     const monthly = annual / 12;
     const quarter = annual / 4;
@@ -823,12 +872,22 @@ if (!data || !data.Symbol) {
     monthlySpan.textContent = `$${monthly.toFixed(2).toLocaleString()}`;
     quarterSpan.textContent = `$${quarter.toFixed(2).toLocaleString()}`;
     weightedYieldSpan.textContent = (weightedYield * 100).toFixed(2) + '%';
-    yieldOnCostSpan.textContent = (costYield * 100).toFixed(2) + '%';
     // Update summary bar
     summaryAnnual.textContent = annualSpan.textContent;
     summaryQuarter.textContent = quarterSpan.textContent;
     summaryMonthly.textContent = monthlySpan.textContent;
     summaryPortfolio.textContent = `$${Number(portfolio).toLocaleString()}`;
+    // Calculate weighted average expense ratio and annual fees
+    let weightedExpense = 0;
+    holdings.forEach(h => {
+      const weight = parseFloat(h.weight) / 100;
+      weightedExpense += weight * (h.expense || 0);
+    });
+    const annualFees = portfolio * (weightedExpense / 100);
+    const summaryAnnualFees = document.getElementById('summaryAnnualFees');
+    if (summaryAnnualFees) {
+      summaryAnnualFees.textContent = `$${annualFees.toFixed(2).toLocaleString()}`;
+    }
 
     // Show the portfolio value in the growth section and refresh the growth chart
     const growthInitialDisplay = document.getElementById('growthInitialDisplay');
@@ -853,7 +912,8 @@ if (!data || !data.Symbol) {
     holdings.forEach(h => {
       const weight = parseFloat(h.weight) / 100;
       const val = portfolio * weight;
-      const annualIncome = val * h.yield;
+      // Convert percent to decimal for calculation
+      const annualIncome = val * (h.yield / 100);
       const monthlyIncome = annualIncome / 12;
       const quarterlyIncome = annualIncome / 4;
       html += `<div style="background: var(--hover-bg); border:1px solid var(--border-colour); padding:0.5rem; border-radius:6px; font-size:0.85rem;">
@@ -882,7 +942,8 @@ if (!data || !data.Symbol) {
     holdings.forEach(h => {
       const weight = parseFloat(h.weight) / 100;
       const value = portfolio * weight;
-      const annual = value * h.yield;
+      // Convert percent to decimal for calculation
+      const annual = value * (h.yield / 100);
       if (!classTotals[h.class]) {
         classTotals[h.class] = { value: 0, annual: 0 };
       }
@@ -937,6 +998,7 @@ if (!data || !data.Symbol) {
   function calculateGrowthProjection(initial, contribAmount, years, includeDrip, frequency = 'yearly') {
   const values = [];
   let balance = initial;
+  let totalContributed = initial;
 
   // Weighted averages for average annual growth rate and yield
   let weightedCAGR = 0;
@@ -944,7 +1006,8 @@ if (!data || !data.Symbol) {
   holdings.forEach(h => {
     const w = parseFloat(h.weight) / 100;
     weightedCAGR += w * (parseFloat(h.cagr) || 0) / 100;
-    if (includeDrip && h.drip) weightedYield += w * h.yield;
+    // Convert percent to decimal for calculation
+    if (includeDrip && h.drip) weightedYield += w * (h.yield / 100);
   });
 
   const effectiveRate = weightedCAGR + weightedYield;
@@ -959,13 +1022,28 @@ if (!data || !data.Symbol) {
 
   for (let i = 1; i <= years; i++) {
     balance += contribPerYear;
+    totalContributed += contribPerYear;
     balance *= (1 + effectiveRate);
-    values.push({ year: i, value: parseFloat(balance.toFixed(2)) });
+    values.push({ year: i, value: parseFloat(balance.toFixed(2)), contributed: totalContributed });
   }
   // Return both values and effectiveRate
   return { values, effectiveRate };
 }
 
+
+  function getChartColors() {
+  // Use body.classList to detect light/dark mode
+  const style = getComputedStyle(document.body);
+  return {
+    grid: style.getPropertyValue('--border-colour').trim() || '#324877',
+    legend: style.getPropertyValue('--text-colour').trim() || '#e4e8f2',
+    axis: style.getPropertyValue('--text-colour').trim() || '#e4e8f2',
+    tooltipBg: style.getPropertyValue('--tooltip-bg').trim() || 'rgba(14, 21, 37, 0.95)',
+    tooltipTitle: style.getPropertyValue('--accent').trim() || '#4cc9f0',
+    tooltipBody: style.getPropertyValue('--text-colour').trim() || '#e4e8f2',
+    tooltipBorder: style.getPropertyValue('--accent').trim() || '#4cc9f0'
+  };
+}
 
   function renderGrowthChart() {
     // Use the current portfolio value from the income slider as the initial amount
@@ -973,25 +1051,44 @@ if (!data || !data.Symbol) {
     const contrib = parseFloat(document.getElementById('growthContribution').value) || 0;
     const years = parseInt(document.getElementById('growthYears').value) || 0;
     const freq = document.getElementById('growthFrequency').value;
-	const priceGrowthObj = calculateGrowthProjection(initial, contrib, years, false, freq);
+  const priceGrowthObj = calculateGrowthProjection(initial, contrib, years, false, freq);
   const totalGrowthObj = calculateGrowthProjection(initial, contrib, years, true, freq);
 
   const labels = priceGrowthObj.values.map(d => `Year ${d.year}`);
   const priceData = priceGrowthObj.values.map(d => d.value);
   const totalData = totalGrowthObj.values.map(d => d.value);
-    const ctx = document.getElementById('growthChart').getContext('2d');
-	const weightedAnnualReturn = totalGrowthObj.effectiveRate * 100; // as percent
-  document.getElementById('weightedAnnualReturn').textContent = weightedAnnualReturn.toFixed(2) + "%";
-	
-	
-	
-	
-    if (growthChartInstance) growthChartInstance.destroy();
-    growthChartInstance = new Chart(ctx, {
+  // Extract contributed amounts (from either object, they're the same)
+  const contributedData = totalGrowthObj.values.map(d => d.contributed);
+
+  const ctx = document.getElementById('growthChart').getContext('2d');
+  const weightedAnnualReturnNoDrip = priceGrowthObj.effectiveRate * 100; // percent
+  const weightedAnnualReturnWithDrip = totalGrowthObj.effectiveRate * 100; // percent
+  document.getElementById('weightedAnnualReturnNoDrip').textContent = weightedAnnualReturnNoDrip.toFixed(2) + "%";
+  document.getElementById('weightedAnnualReturnWithDrip').textContent = weightedAnnualReturnWithDrip.toFixed(2) + "%";
+
+  // Get theme-aware colors
+  const chartColors = getChartColors();
+
+  if (growthChartInstance) growthChartInstance.destroy();
+  growthChartInstance = new Chart(ctx, {
       type: chartType,
       data: {
         labels: labels,
         datasets: [
+          // Move "Total Contributed" to the first dataset
+          {
+            label: 'Total Contributed',
+            data: contributedData,
+            backgroundColor: 'transparent',
+            borderColor: 'rgba(150,150,150,0.7)',
+            borderWidth: 2,
+            borderDash: [6, 6],
+            fill: false,
+            tension: 0,
+            pointBackgroundColor: 'rgba(150,150,150,0.7)',
+            pointRadius: 0,
+            pointHoverRadius: 4
+          },
           {
             label: 'Price Growth (Avg Annual Growth Only)',
             data: priceData,
@@ -1000,7 +1097,6 @@ if (!data || !data.Symbol) {
             borderWidth: 2,
             fill: false,
             tension: 0.3,
-            // Show points only in line mode to enable tooltips
             pointBackgroundColor: chartType === 'bar' ? 'rgba(253, 208, 0, 0.6)' : 'rgba(253, 208, 0, 1)',
             pointRadius: chartType === 'bar' ? 0 : 3,
             pointHoverRadius: chartType === 'bar' ? 0 : 5
@@ -1027,21 +1123,21 @@ if (!data || !data.Symbol) {
         },
         plugins: {
           tooltip: {
-	backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--tooltip-bg').trim(),
-	titleColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
-	bodyColor: getComputedStyle(document.documentElement).getPropertyValue('--text-colour').trim(),
-	borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
-	borderWidth: 1,
-	cornerRadius: 8,
-	padding: 10,
-	titleFont: { family: "'Inter', sans-serif", weight: '600', size: 14 },
-	bodyFont: { family: "'Inter', sans-serif", weight: '400', size: 13 },
-	callbacks: {
-    label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`
-		}
-	 },
+            backgroundColor: chartColors.tooltipBg,
+            titleColor: chartColors.tooltipTitle,
+            bodyColor: chartColors.tooltipBody,
+            borderColor: chartColors.tooltipBorder,
+            borderWidth: 1,
+            cornerRadius: 8,
+            padding: 10,
+            titleFont: { family: "'Inter', sans-serif", weight: '600', size: 14 },
+            bodyFont: { family: "'Inter', sans-serif", weight: '400', size: 13 },
+            callbacks: {
+              label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`
+            }
+          },
           legend: {
-            labels: { color: 'var(--text-colour)' }
+            labels: { color: chartColors.legend }
           }
         },
         scales: {
@@ -1049,17 +1145,107 @@ if (!data || !data.Symbol) {
             beginAtZero: true,
             ticks: {
               callback: value => `$${value.toLocaleString()}`,
-              color: 'var(--text-colour)'
+              color: chartColors.axis
             },
-            grid: { color: 'var(--border-colour)' }
+            grid: { color: chartColors.grid }
           },
           x: {
-            ticks: { color: 'var(--text-colour)' },
-            grid: { color: 'var(--border-colour)' }
+            ticks: { color: chartColors.axis },
+            grid: { color: chartColors.grid }
           }
         }
       }
     });
+    // Add button to open breakdown table modal
+  // Button is now in the DOM next to the toggleGrowthChart button
+  const breakdownBtn = document.getElementById('showGrowthBreakdownBtn');
+    // Modal for breakdown table
+    let modal = document.getElementById('growthBreakdownModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'growthBreakdownModal';
+      modal.style.position = 'fixed';
+      modal.style.top = '0';
+      modal.style.left = '0';
+      modal.style.width = '100vw';
+      modal.style.height = '100vh';
+      modal.style.background = 'rgba(0,0,0,0.45)';
+      modal.style.display = 'none';
+      modal.style.zIndex = '99999';
+  modal.innerHTML = `<div style="position:relative;max-width:820px;margin:5vh auto;background:var(--card-bg);border-radius:14px;padding:2rem;box-shadow:0 8px 32px rgba(0,0,0,0.25);">
+        <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:1rem;">
+          <button id="closeGrowthBreakdownModal" class="btn">Close</button>
+        </div>
+        <div class="growth-breakdown-scroll" style="width:100%; max-height:80vh; min-height:60vh; overflow-y:auto; padding-top:0;">
+          <div id="growthBreakdownTableContent"></div>
+        </div>
+      </div>`;
+      document.body.appendChild(modal);
+    }
+    // Stacked table HTML (Without DRIP and With DRIP rows for each year)
+    let tableHtml = `<table style="width:100%;border-collapse:collapse;margin-top:1rem;table-layout:fixed;">
+      <thead>
+        <tr style="background:var(--table-header-bg);color:var(--table-header-text);">
+          <th class="sticky-th">Year</th>
+          <th class="sticky-th">Type</th>
+          <th class="sticky-th">Start Value</th>
+          <th class="sticky-th">Income</th>
+          <th class="sticky-th">Contribution</th>
+          <th class="sticky-th">End Value</th>
+        </tr>
+      </thead>
+      <tbody>`;
+    let prevNoDrip = initial;
+    let weightedYieldNoDrip = 0;
+    holdings.forEach(h => {
+      const w = parseFloat(h.weight) / 100;
+      if (!h.drip) weightedYieldNoDrip += w * (h.yield / 100);
+    });
+    let prevDrip = initial;
+    let weightedYieldDrip = 0;
+    holdings.forEach(h => {
+      const w = parseFloat(h.weight) / 100;
+      if (h.drip) weightedYieldDrip += w * (h.yield / 100);
+    });
+    for (let i = 0; i < years; i++) {
+      const yearNum = i + 1;
+      // Without DRIP row
+      const startNoDrip = prevNoDrip;
+      const incomeNoDrip = startNoDrip * weightedYieldNoDrip;
+      const contribNoDrip = priceGrowthObj.values[i].contributed - (i === 0 ? initial : priceGrowthObj.values[i-1].contributed);
+      const endNoDrip = priceGrowthObj.values[i].value;
+      prevNoDrip = endNoDrip;
+      // With DRIP row
+      const startDrip = prevDrip;
+      const incomeDrip = startDrip * weightedYieldDrip;
+      const contribDrip = totalGrowthObj.values[i].contributed - (i === 0 ? initial : totalGrowthObj.values[i-1].contributed);
+      const endDrip = totalGrowthObj.values[i].value;
+      prevDrip = endDrip;
+      tableHtml += `<tr style="background:${yearNum%2===0?'var(--card-bg)':'var(--hover-bg)'};">
+        <td rowspan="2">${yearNum}</td>
+        <td>Without DRIP</td>
+        <td>$${startNoDrip.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
+        <td>$${incomeNoDrip.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
+        <td>$${contribNoDrip.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
+        <td>$${endNoDrip.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
+      </tr>`;
+      tableHtml += `<tr style="background:${yearNum%2===0?'var(--card-bg)':'var(--hover-bg)'};">
+        <td>With DRIP</td>
+        <td>$${startDrip.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
+        <td>$${incomeDrip.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
+        <td>$${contribDrip.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
+        <td>$${endDrip.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
+      </tr>`;
+    }
+    tableHtml += '</tbody></table>';
+    document.getElementById('growthBreakdownTableContent').innerHTML = tableHtml;
+    // Button event
+    breakdownBtn.onclick = function() {
+      modal.style.display = 'flex';
+    };
+    document.getElementById('closeGrowthBreakdownModal').onclick = function() {
+      modal.style.display = 'none';
+    };
   }
 
   function updateGrowthChart() {
@@ -1146,6 +1332,54 @@ if (!data || !data.Symbol) {
     alertBox.style.display = 'none';
   };
 }
+
+  // Restore fetchMetrics from v1.1.3
+  let canFetch = true;
+  async function fetchMetrics() {
+    if (!canFetch) {
+      showCustomAlert("Please wait 15 seconds between fetch requests.");
+      return;
+    }
+
+    const ticker = document.getElementById('newTicker').value.trim().toUpperCase();
+    if (!ticker) {
+      showCustomAlert("Please enter a ticker symbol first.");
+      return;
+    }
+
+    canFetch = false;
+    setTimeout(() => { canFetch = true; }, 15000); // 15 sec timer
+
+    try {
+      // Use Alpha Vantage API for overview
+      const url = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${ticker}&apikey=${API_KEY}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.Note) {
+        showCustomAlert("API limit reached. Please wait a minute before trying again.");
+        return;
+      }
+
+      if (!data || !data.Symbol) {
+        showCustomAlert("No data found for ticker: " + ticker);
+        return;
+      }
+
+      // Fill form fields if available
+      document.getElementById('newName').value = data.Name || ticker;
+      document.getElementById('newClass').value = data.AssetType || '';
+      document.getElementById('newYield').value = data.DividendYield ? (parseFloat(data.DividendYield) * 100).toFixed(2) : '';
+      document.getElementById('newCAGR').value = data.FiveYearAverageDividendYield ? parseFloat(data.FiveYearAverageDividendYield).toFixed(2) : '';
+      document.getElementById('newExpense').value = data.ExpenseRatio ? parseFloat(data.ExpenseRatio).toFixed(2) : '';
+      // Optionally set schedule based on dividend frequency
+      if (data.DividendDate) {
+        document.getElementById('newSchedule').value = 'quarterly'; // Most US stocks pay quarterly
+      }
+    } catch (err) {
+      showCustomAlert("Error fetching data: " + err.message);
+    }
+  }
 
 
   // Add holding manually
@@ -1275,6 +1509,7 @@ if (!data || !data.Symbol) {
   // Theme toggle
   document.getElementById('themeToggle').addEventListener('click', () => {
     document.body.classList.toggle('light-mode');
+    updateGrowthChart(); // Add this line to refresh chart colors
   });
   
   // Sort Indicators
@@ -1345,6 +1580,24 @@ document.addEventListener('click', function(e) {
     // Default slider value
     accountSlider.value = 0;
     updateIncome();
+  });
+  // ...existing code...
+  // Stock Research Modal logic
+  document.addEventListener('DOMContentLoaded', function() {
+    var researchBtn = document.getElementById('stockResearchBtn');
+    var researchModal = document.getElementById('stockResearchModal');
+    var closeResearch = document.getElementById('closeStockResearch');
+    if (researchBtn && researchModal && closeResearch) {
+      researchBtn.addEventListener('click', function() {
+        researchModal.style.display = 'flex';
+      });
+      closeResearch.addEventListener('click', function() {
+        researchModal.style.display = 'none';
+      });
+      researchModal.addEventListener('click', function(e) {
+        if (e.target === researchModal) researchModal.style.display = 'none';
+      });
+    }
   });
   </script>
   
