@@ -22,12 +22,15 @@ Local Storage Persistence – Portfolios and settings are saved in your browser 
 
 📷 Screenshots
 
-<img width="1847" height="908" alt="image" src="https://github.com/user-attachments/assets/10fe0cf0-078d-43ff-ab45-8d18cf511c86" />
-<img width="1793" height="762" alt="image" src="https://github.com/user-attachments/assets/8ad50d8f-5c03-44be-bb1d-4e223445576c" />
-<img width="1794" height="323" alt="image" src="https://github.com/user-attachments/assets/ff797be1-19b3-4250-ade9-450e3fcd7770" />
-<img width="1794" height="760" alt="image" src="https://github.com/user-attachments/assets/99a5a435-ab71-425c-8006-38aa39e2023a" />
-<img width="1793" height="632" alt="image" src="https://github.com/user-attachments/assets/ca40f640-9b43-448d-a06e-504379769e3f" />
-<img width="697" height="795" alt="image" src="https://github.com/user-attachments/assets/906803a4-4ed9-48c4-9485-7cc5c6fc23a0" />
+<img width="1846" height="906" alt="image" src="https://github.com/user-attachments/assets/c9fb643f-0f02-438c-aa0e-3e7d42e8f5be" />
+<img width="1802" height="764" alt="image" src="https://github.com/user-attachments/assets/b3e34b57-8bad-4d15-8358-a73f798b3938" />
+<img width="1816" height="761" alt="image" src="https://github.com/user-attachments/assets/e8ffb887-b4e3-4f92-8a36-94cc42c187c1" />
+<img width="1813" height="695" alt="image" src="https://github.com/user-attachments/assets/b4f039ed-dbfb-48b7-b6de-4d5cca9f68bd" />
+<img width="1816" height="658" alt="image" src="https://github.com/user-attachments/assets/c319603a-0a59-473d-b1de-d09464267358" />
+<img width="704" height="809" alt="image" src="https://github.com/user-attachments/assets/83d39535-91ce-4e4e-ade3-f54efd2a7327" />
+<img width="1086" height="439" alt="image" src="https://github.com/user-attachments/assets/029a8cac-2131-4015-a0c4-ff31226eee78" />
+<img width="311" height="455" alt="image" src="https://github.com/user-attachments/assets/9c0c483e-d171-4a81-9698-55fa7dd558f2" />
+
 
 
 📖 How to Use
