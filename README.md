@@ -1,5 +1,5 @@
 Custom Income Portfolio Tool
-Live Demo: Custom Income Portfolio Tool
+Live Demo: [Custom Income Portfolio Tool](https://joshdisciple.github.io/Custom-Income-Portfolio-Tool/#overview)
 
 A browser-based portfolio planner focused on income + growth projections. This tool lets you track holdings, estimate passive income, model reinvestment scenarios, and visualize portfolio growth — all right in your browser, with no sign-up or server required.
 
