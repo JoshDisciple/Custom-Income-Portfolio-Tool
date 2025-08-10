@@ -162,6 +162,55 @@
       padding: 0.5rem 0.75rem;
       border-radius: 6px;
       font-size: 0.9rem;
+      /* Remove default arrow for custom styling */
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      position: relative;
+  }
+
+  /* Custom dropdown arrow */
+  select.styled-input {
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%234cc9f0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.516 7.548a.75.75 0 0 1 1.06 0L10 10.972l3.424-3.424a.75.75 0 1 1 1.06 1.06l-3.954 3.954a.75.75 0 0 1-1.06 0L5.516 8.608a.75.75 0 0 1 0-1.06z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.1em;
+    padding-right: 2em;
+  }
+  .light-mode select.styled-input {
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%230077b6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.516 7.548a.75.75 0 0 1 1.06 0L10 10.972l3.424-3.424a.75.75 0 1 1 1.06 1.06l-3.954 3.954a.75.75 0 0 1-1.06 0L5.516 8.608a.75.75 0 0 1 0-1.06z"/></svg>');
+  }
+
+  /* Custom number input steppers */
+  input[type="number"].styled-input::-webkit-inner-spin-button,
+  input[type="number"].styled-input::-webkit-outer-spin-button {
+    background: var(--card-bg);
+    border-radius: 6px;
+    width: 1.2em;
+    height: 1.2em;
+    border: none;
+    box-shadow: none;
+    color: var(--accent);
+    -webkit-filter: brightness(1.2);
+    filter: brightness(1.2);
+  }
+  input[type="number"].styled-input:focus::-webkit-inner-spin-button,
+  input[type="number"].styled-input:focus::-webkit-outer-spin-button {
+    background: var(--accent);
+    color: var(--card-bg);
+  }
+  input[type="number"].styled-input::-webkit-input-placeholder {
+    color: var(--muted-text);
+  }
+  /* Firefox */
+  input[type="number"].styled-input {
+    -moz-appearance: textfield;
+  }
+  input[type="number"].styled-input::-moz-inner-spin-button {
+    background: var(--card-bg);
+    color: var(--accent);
+    border-radius: 6px;
+  }
     }
     .styled-input:focus, select:focus {
       outline: none;
@@ -396,21 +445,23 @@
 <section style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: stretch; margin: 1.5rem;">
   <div class="card" id="overview" style="flex: 1 1 350px; min-width: 300px;">
     <h2>1. Overview</h2>
-    <p>This tool helps you design a personalised income‑oriented portfolio. Add your holdings, specify weights, set payment schedules and see how your money could work for you over time. The income and growth projections update on the fly as you make adjustments.</p>
-  <p><strong>Fetch Data:</strong> You can retrieve basic fund data using the API by entering a valid ticker symbol (e.g., <code>SCHD</code> for ETFs, <code>VTSAX</code> for mutual funds, or <code>AAPL</code> for stocks) and clicking "Fetch". This will attempt to auto-fill the name, asset type, yield, <b>average annual growth rate</b>, and expense ratio if available. You may still edit or overwrite the values manually before adding. The API supports many stocks, ETFs, and mutual funds, but coverage may vary by ticker.</p>
+    <p>This tool helps you design a personalized income and growth portfolio. Add your holdings, set weights, and see real-time projections for income and portfolio growth. The tool supports both price growth and total growth (with DRIP), and provides instant breakdowns by holding and asset class.</p>
+    <p><strong>Fetch Data:</strong> Enter a ticker symbol (e.g., <code>SCHD</code>, <code>VTSAX</code>, <code>AAPL</code>) to auto-fill fund details. You can edit any value before adding. Coverage varies by ticker.</p>
     <h3 style="margin-top:0;">How to Use</h3>
     <ol style="margin-bottom:1rem;">
-      <li><strong>Add Holdings:</strong> Enter fund details or fetch them by ticker, then click <b>Add</b>.</li>
-      <li><strong>Adjust Weights:</strong> Set your desired allocation for each holding. The total must not exceed 100%.</li>
-      <li><strong>Contribution Allocator:</strong> Enter a lump sum to see how it would be distributed across your holdings.</li>
-      <li><strong>Income Calculator:</strong> Use the slider to estimate annual, quarterly, and monthly income based on your portfolio value.</li>
-      <li><strong>Growth Projection:</strong> Model how your portfolio could grow over time with contributions and reinvestment.</li>
-      <li><strong>Settings:</strong> Use the Settings menu (top right) to export, import, or change the theme.</li>
+      <li><strong>Add Holdings:</strong> Enter or fetch fund details, then click <b>Add</b>.</li>
+      <li><strong>Adjust Weights:</strong> Set allocation for each holding (total must not exceed 100%).</li>
+      <li><strong>Contribution Allocator:</strong> See how a lump sum would be distributed across holdings.</li>
+      <li><strong>Income Calculator:</strong> Use the slider to estimate annual, quarterly, and monthly income.</li>
+      <li><strong>Growth Projection:</strong> Model portfolio growth over time, with or without DRIP, and view Rule of 72 estimates for both scenarios.</li>
+      <li><strong>Breakdowns & Charts:</strong> View per-holding and per-asset-class breakdowns, and switch between table and pie chart views.</li>
+      <li><strong>Settings:</strong> Export/import portfolios, change theme, and manage DRIP defaults.</li>
     </ol>
     <ul style="margin-bottom:0.5rem;">
-      <li>Supports <b>DRIP</b> (dividend reinvestment) toggles per holding</li>
+      <li>Supports <b>DRIP</b> toggles per holding</li>
       <li>Shows both per-holding and per-asset-class income breakdowns</li>
-      <li>Visualise allocations with a pie chart or table</li>
+      <li>Visualize allocations with pie chart or table</li>
+      <li>Growth chart with Rule of 72 estimates for both DRIP and non-DRIP</li>
       <li>All data is stored locally in your browser for privacy</li>
     </ul>
   </div>
@@ -418,19 +469,25 @@
     <h2>2. Glossary &amp; Definitions</h2>
     <dl style="margin-top:1rem;">
       <dt><strong>Distribution Rate (Yield)</strong></dt>
-      <dd>The annualised distribution (dividend) rate expressed as a percentage of the fund’s value. A 3.9% yield means the fund pays distributions equal to 3.9% of its value each year.</dd>
-      <dt><strong>Average Annual Growth Rate</strong></dt>
-      <dd>The average yearly increase in value of an investment over a specified period, expressed as a percentage. It reflects the mean annual rate at which an investment has grown, not accounting for compounding, and is useful for comparing the historical performance of different assets.</dd>
+      <dd>The annualized dividend/distribution rate as a percentage of fund value.</dd>
+      <dt><strong>Average Annual Growth Rate (CAGR)</strong></dt>
+      <dd>The mean annual rate at which an investment has grown, used for projecting future value.</dd>
       <dt><strong>Expense Ratio</strong></dt>
-      <dd>The annual fee that funds charge to cover operating expenses, expressed as a percentage of assets. Lower expense ratios mean more of your money remains invested.</dd>
+      <dd>The annual fee charged by funds, expressed as a percentage of assets.</dd>
       <dt><strong>DRIP (Dividend Reinvestment Plan)</strong></dt>
-      <dd>A setting that automatically reinvests distributions back into the holding rather than paying them out. Enabling DRIP can accelerate growth through compounding.</dd>
+      <dd>Automatically reinvests distributions into the holding, accelerating growth through compounding.</dd>
       <dt><strong>Weighted Distribution Yield</strong></dt>
-      <dd>The sum of each holding’s distribution yield weighted by its portfolio weight. It reflects the overall distribution rate of the portfolio.</dd>
-      <dt><strong>NAV (Net Asset Value)</strong></dt>
-      <dd>The per‑share value of a fund’s underlying holdings after expenses. It is calculated as (assets – liabilities) ÷ shares outstanding.</dd>
+      <dd>Portfolio-wide yield, calculated by weighting each holding’s yield by its allocation.</dd>
+      <dt><strong>Rule of 72</strong></dt>
+      <dd>Quick estimate of years required to double your investment: 72 divided by annual return. Shown for both DRIP and non-DRIP scenarios.</dd>
       <dt><strong>Income Frequencies</strong></dt>
-      <dd>Funds may distribute payments on different schedules: weekly, monthly, quarterly, semi‑annually or annually. Payment schedules affect the timing of income flows but not the total annual amount.</dd>
+      <dd>Funds may pay distributions weekly, monthly, quarterly, semi-annually, or annually.</dd>
+      <dt><strong>Breakdowns</strong></dt>
+      <dd>Income and growth breakdowns are shown by holding and by asset class.</dd>
+      <dt><strong>Chart Types</strong></dt>
+      <dd>Switch between pie chart and table views for allocations; growth chart supports bar and line modes.</dd>
+      <dt><strong>Local Privacy</strong></dt>
+      <dd>All portfolio data is stored locally in your browser; nothing is sent to a server.</dd>
     </dl>
   </div>
 </section>
@@ -620,7 +677,8 @@
     <div style="display:flex; gap:0.75rem; margin-top:1rem;">
   <button id="toggleGrowthChart" class="btn" style="margin-top:0;">Switch to Line Chart</button>
   <button id="showGrowthBreakdownBtn" class="btn" style="margin-top:0;">Show Yearly Breakdown Table</button>
-    </div>
+  <div id="ruleOf72Estimate" style="margin-left:1rem; color:var(--muted-text); font-size:0.98rem;"></div>
+  </div>
     <!-- Smaller chart height for better fit on screen -->
     <div style="width:100%; display:flex; justify-content:center;">
       <div style="width:100%; display:flex; justify-content:center;">
@@ -1228,6 +1286,12 @@
 
   const effectiveRate = weightedCAGR + weightedYield;
 
+  // Rule of 72 estimate (years to double)
+  // Only update the display if called from renderGrowthChart
+  if (typeof window.updateRuleOf72Estimate === 'function') {
+    window.updateRuleOf72Estimate(effectiveRate, includeDrip);
+  }
+
   // Convert contribution to yearly total based on frequency
   const contribPerYear = {
     yearly: contribAmount,
@@ -1269,6 +1333,33 @@
     const freq = document.getElementById('growthFrequency').value;
   const priceGrowthObj = calculateGrowthProjection(initial, contrib, years, false, freq);
   const totalGrowthObj = calculateGrowthProjection(initial, contrib, years, true, freq);
+
+  // Rule of 72 for both scenarios
+  window.updateRuleOf72Estimate = function(effectiveRate, withDrip) {
+  const ruleOf72NoDrip = priceGrowthObj.effectiveRate > 0 ? (72 / (priceGrowthObj.effectiveRate * 100)).toFixed(1) : 'N/A';
+  const ruleOf72WithDrip = totalGrowthObj.effectiveRate > 0 ? (72 / (totalGrowthObj.effectiveRate * 100)).toFixed(1) : 'N/A';
+  const noDripText = `<span style='color:#fdd000;'>No DRIP:</span> <b>${ruleOf72NoDrip} yrs</b> <span style='color:#fdd000;'>(${(priceGrowthObj.effectiveRate*100).toFixed(2)}%)</span>`;
+  const withDripText = `<span style='color:#4cc9f0;'>With DRIP:</span> <b>${ruleOf72WithDrip} yrs</b> <span style='color:#4cc9f0;'>(${(totalGrowthObj.effectiveRate*100).toFixed(2)}%)</span>`;
+  document.getElementById('ruleOf72Estimate').innerHTML = `
+    <span style='font-weight:600; position:relative; cursor:help;' class='rule72-tooltip'>
+      Rule of 72
+      <span class='tooltip tooltip-text' style="display:none; left:0; top:1.8em; min-width:320px; max-width:420px; white-space:normal;">
+        <b>Rule of 72</b> is a simple way to estimate how many years it will take for an investment to double, given a fixed annual rate of return. Divide 72 by the annual rate (%).
+      </span>
+    </span>: ${noDripText} &nbsp;|&nbsp; ${withDripText}`;
+  // Add tooltip hover logic (match global tooltip behavior)
+  const rule72El = document.querySelector('.rule72-tooltip');
+  if (rule72El) {
+    const tip = rule72El.querySelector('.tooltip-text');
+    rule72El.addEventListener('mouseenter', function() {
+      if (tip) { tip.style.display = 'block'; tip.style.opacity = '1'; }
+    });
+    rule72El.addEventListener('mouseleave', function() {
+      if (tip) { tip.style.display = 'none'; tip.style.opacity = '0'; }
+    });
+  }
+  };
+  window.updateRuleOf72Estimate();
 
   const labels = priceGrowthObj.values.map(d => `Year ${d.year}`);
   const priceData = priceGrowthObj.values.map(d => d.value);
