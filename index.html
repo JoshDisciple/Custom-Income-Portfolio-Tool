@@ -36,6 +36,21 @@
     }
     * { box-sizing: border-box; }
   /* Custom scrollbar for growth breakdown modal */
+    /* Modal animation styles */
+      .modal-fade {
+        opacity: 0;
+        transform: scale(0.92) translateY(32px);
+        transition: opacity 0.45s cubic-bezier(.4,0,.2,1), transform 0.45s cubic-bezier(.4,0,.2,1);
+        pointer-events: none;
+        box-shadow: 0 16px 48px rgba(0,0,0,0.30);
+        filter: blur(1.5px) brightness(0.95);
+      }
+      .modal-fade.show {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        pointer-events: auto;
+        filter: none;
+      }
     .growth-breakdown-scroll {
       scrollbar-width: thin;
       scrollbar-color: var(--accent) var(--card-bg);
@@ -121,6 +136,7 @@
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       transition: transform 0.2s, box-shadow 0.2s;
+  scroll-margin-top: 116px; /* Further increased offset for sticky header */
     }
     .card:hover { transform: translateY(-4px); box-shadow: 0 6px 18px rgba(0,0,0,0.4); }
     table {
@@ -260,9 +276,11 @@
 
 
     /* Glossary spacing for readability */
-    #glossary dt {
+    #glossary dt, #glossaryModalInner dt {
       margin-top: 0.75rem;
       color: var(--accent);
+      font-weight: 700;
+      font-size: 1.05em;
     }
     #glossary dd {
       margin-left: 0;
@@ -397,8 +415,7 @@
         <small style="color: var(--muted-text);">Plan &amp; track your personalised income portfolio</small>
       </div>
       <nav>
-        <a href="#overview">Overview & Glossary</a>
-        <a href="#weights">Category Weights</a>
+  <a href="#portfolio-overview">Portfolio Overview</a>
         <a href="#holdings">Holdings</a>
         <a href="#contribution">Contribute</a>
         <a href="#income-calc">Income</a>
@@ -431,6 +448,7 @@
         Default DRIP State: <span id="defaultDripStateLabel">ON</span>
       </button>
       <button id="resetAllBtn" class="btn" style="width:100%;margin-top:0.5rem;background-color:#d9534f;color:#fff;border-color:#d9534f;">Reset All Data</button>
+  <button id="comparePortfoliosBtn" class="btn" style="width:100%;margin-top:0.5rem;">Compare Portfolios</button>
     </div>
   </div>
       </nav>
@@ -440,64 +458,95 @@
   <!-- Tooltip placeholder; content filled by JS -->
   <div id="tooltip" class="tooltip"></div>
 
-
-  <!-- Overview and Glossary side by side -->
-<section style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: stretch; margin: 1.5rem;">
-  <div class="card" id="overview" style="flex: 1 1 350px; min-width: 300px;">
-    <h2>1. Overview</h2>
-    <p>This tool helps you design a personalized income and growth portfolio. Add your holdings, set weights, and see real-time projections for income and portfolio growth. The tool supports both price growth and total growth (with DRIP), and provides instant breakdowns by holding and asset class.</p>
-    <p><strong>Fetch Data:</strong> Enter a ticker symbol (e.g., <code>SCHD</code>, <code>VTSAX</code>, <code>AAPL</code>) to auto-fill fund details. You can edit any value before adding. Coverage varies by ticker.</p>
-    <h3 style="margin-top:0;">How to Use</h3>
-    <ol style="margin-bottom:1rem;">
-      <li><strong>Add Holdings:</strong> Enter or fetch fund details, then click <b>Add</b>.</li>
-      <li><strong>Adjust Weights:</strong> Set allocation for each holding (total must not exceed 100%).</li>
-      <li><strong>Contribution Allocator:</strong> See how a lump sum would be distributed across holdings.</li>
-      <li><strong>Income Calculator:</strong> Use the slider to estimate annual, quarterly, and monthly income.</li>
-      <li><strong>Growth Projection:</strong> Model portfolio growth over time, with or without DRIP, and view Rule of 72 estimates for both scenarios.</li>
-      <li><strong>Breakdowns & Charts:</strong> View per-holding and per-asset-class breakdowns, and switch between table and pie chart views.</li>
-      <li><strong>Settings:</strong> Export/import portfolios, change theme, and manage DRIP defaults.</li>
-    </ol>
-    <ul style="margin-bottom:0.5rem;">
-      <li>Supports <b>DRIP</b> toggles per holding</li>
-      <li>Shows both per-holding and per-asset-class income breakdowns</li>
-      <li>Visualize allocations with pie chart or table</li>
-      <li>Growth chart with Rule of 72 estimates for both DRIP and non-DRIP</li>
-      <li>All data is stored locally in your browser for privacy</li>
-    </ul>
+  <!-- Compare Portfolios Modal -->
+  <div id="comparePortfoliosModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+  <div class="modal-fade" id="comparePortfoliosModalInner" style="background:var(--card-bg);color:var(--text-colour);max-width:1100px;width:98vw;padding:2rem 2.5rem;border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,0.30);position:relative;max-height:90vh;overflow-y:auto;">
+      <button id="closeComparePortfoliosModal" class="btn" style="position:absolute;top:1rem;right:1rem;">Close</button>
+      <h2>Compare Portfolios</h2>
+  <p>Select up to five <strong>saved portfolios</strong> to compare their metrics side-by-side. Only portfolios that have been saved will appear in the dropdowns.</p>
+      <div id="comparePortfolioSelectors" style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;"></div>
+      <div id="comparePortfolioResults"></div>
+    </div>
   </div>
-  <div class="card" id="glossary" style="flex: 1 1 350px; min-width: 300px;">
-    <h2>2. Glossary &amp; Definitions</h2>
-    <dl style="margin-top:1rem;">
-      <dt><strong>Distribution Rate (Yield)</strong></dt>
-      <dd>The annualized dividend/distribution rate as a percentage of fund value.</dd>
-      <dt><strong>Average Annual Growth Rate (CAGR)</strong></dt>
-      <dd>The mean annual rate at which an investment has grown, used for projecting future value.</dd>
-      <dt><strong>Expense Ratio</strong></dt>
-      <dd>The annual fee charged by funds, expressed as a percentage of assets.</dd>
-      <dt><strong>DRIP (Dividend Reinvestment Plan)</strong></dt>
-      <dd>Automatically reinvests distributions into the holding, accelerating growth through compounding.</dd>
-      <dt><strong>Weighted Distribution Yield</strong></dt>
-      <dd>Portfolio-wide yield, calculated by weighting each holding’s yield by its allocation.</dd>
-      <dt><strong>Rule of 72</strong></dt>
-      <dd>Quick estimate of years required to double your investment: 72 divided by annual return. Shown for both DRIP and non-DRIP scenarios.</dd>
-      <dt><strong>Income Frequencies</strong></dt>
-      <dd>Funds may pay distributions weekly, monthly, quarterly, semi-annually, or annually.</dd>
-      <dt><strong>Breakdowns</strong></dt>
-      <dd>Income and growth breakdowns are shown by holding and by asset class.</dd>
-      <dt><strong>Chart Types</strong></dt>
-      <dd>Switch between pie chart and table views for allocations; growth chart supports bar and line modes.</dd>
-      <dt><strong>Local Privacy</strong></dt>
-      <dd>All portfolio data is stored locally in your browser; nothing is sent to a server.</dd>
-    </dl>
-  </div>
-</section>
 
-  <!-- Category weights section -->
-  <section class="card" id="weights">
-    <h2>3. Category Weights</h2>
-    <p>The table below aggregates your holdings by asset class.  Whenever you add or remove a holding, these totals update automatically.  If you prefer a visual breakdown, toggle the chart view in the holdings section.</p>
+
+  <!-- Overview and Glossary pop-out modals -->
+  <div id="overviewModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+  <div class="modal-fade" id="overviewModalInner" style="background:var(--card-bg);color:var(--text-colour);max-width:820px;width:98vw;padding:2rem 2.5rem;border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,0.30);position:relative;">
+      <button id="closeOverviewModal" class="btn" style="position:absolute;top:1rem;right:1rem;">Close</button>
+      <h2>Overview</h2>
+      <p>This tool helps you design a personalized income and growth portfolio. Add your holdings, set weights, and see real-time projections for income and portfolio growth. The tool supports both price growth and total growth (with DRIP), and provides instant breakdowns by holding and asset class.</p>
+      <p><strong>Fetch Data:</strong> Enter a ticker symbol (e.g., <code>SCHD</code>, <code>VTSAX</code>, <code>AAPL</code>) to auto-fill fund details. You can edit any value before adding. Coverage varies by ticker.</p>
+      <h3 style="margin-top:0;">How to Use</h3>
+      <ol style="margin-bottom:1rem;">
+        <li><strong>Add Holdings:</strong> Enter or fetch fund details, then click <b>Add</b>.</li>
+        <li><strong>Adjust Weights:</strong> Set allocation for each holding (total must not exceed 100%).</li>
+        <li><strong>Contribution Allocator:</strong> See how a lump sum would be distributed across holdings.</li>
+        <li><strong>Income Calculator:</strong> Use the slider to estimate annual, quarterly, and monthly income.</li>
+        <li><strong>Growth Projection:</strong> Model portfolio growth over time, with or without DRIP, and view Rule of 72 estimates for both scenarios.</li>
+        <li><strong>Breakdowns & Charts:</strong> View per-holding and per-asset-class breakdowns, and switch between table and pie chart views.</li>
+        <li><strong>Settings:</strong> Export/import portfolios, change theme, and manage DRIP defaults.</li>
+      </ol>
+      <ul style="margin-bottom:0.5rem;">
+        <li>Supports <b>DRIP</b> toggles per holding</li>
+        <li>Shows both per-holding and per-asset-class income breakdowns</li>
+        <li>Visualize allocations with pie chart or table</li>
+        <li>Growth chart with Rule of 72 estimates for both DRIP and non-DRIP</li>
+        <li>All data is stored locally in your browser for privacy</li>
+      </ul>
+    </div>
+  </div>
+  <div id="glossaryModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+  <div class="modal-fade" id="glossaryModalInner" style="background:var(--card-bg);color:var(--text-colour);max-width:820px;width:98vw;padding:2rem 2.5rem;border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,0.30);position:relative;">
+      <button id="closeGlossaryModal" class="btn" style="position:absolute;top:1rem;right:1rem;">Close</button>
+      <h2>Glossary &amp; Definitions</h2>
+      <dl style="margin-top:1rem;">
+        <dt><strong>Distribution Rate (Yield)</strong></dt>
+        <dd>The annualized dividend/distribution rate as a percentage of fund value.</dd>
+        <dt><strong>Average Annual Growth Rate (CAGR)</strong></dt>
+        <dd>The mean annual rate at which an investment has grown, used for projecting future value.</dd>
+        <dt><strong>Expense Ratio</strong></dt>
+        <dd>The annual fee charged by funds, expressed as a percentage of assets.</dd>
+        <dt><strong>DRIP (Dividend Reinvestment Plan)</strong></dt>
+        <dd>Automatically reinvests distributions into the holding, accelerating growth through compounding.</dd>
+        <dt><strong>Weighted Distribution Yield</strong></dt>
+        <dd>Portfolio-wide yield, calculated by weighting each holding’s yield by its allocation.</dd>
+        <dt><strong>Rule of 72</strong></dt>
+        <dd>Quick estimate of years required to double your investment: 72 divided by annual return. Shown for both DRIP and non-DRIP scenarios.</dd>
+        <dt><strong>Income Frequencies</strong></dt>
+        <dd>Funds may pay distributions weekly, monthly, quarterly, semi-annually, or annually.</dd>
+        <dt><strong>Breakdowns</strong></dt>
+        <dd>Income and growth breakdowns are shown by holding and by asset class.</dd>
+        <dt><strong>Chart Types</strong></dt>
+        <dd>Switch between pie chart and table views for allocations; growth chart supports bar and line modes.</dd>
+        <dt><strong>Local Privacy</strong></dt>
+        <dd>All portfolio data is stored locally in your browser; nothing is sent to a server.</dd>
+      </dl>
+    </div>
+  </div>
+
+  <!-- Overall Summary Card (Category Weights + Portfolio Summary) -->
+  <section class="card" id="portfolio-overview">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;">
+  <h2 style="margin-bottom:0.5rem;">1. Portfolio Overview</h2>
+      <div style="color: var(--muted-text); font-size:1rem; font-weight:600; margin-left:1rem;">
+        <span style="background:var(--hover-bg);padding:0.4em 1em;border-radius:6px;">Selected Portfolio: <span id="portfolioSummaryName"></span></span>
+      </div>
+    </div>
+    <div style="margin:1.2rem 0 1.5rem 0;">
+      <div style="background:var(--hover-bg);border:1px solid var(--border-colour);border-radius:10px;padding:1.1rem 1.5rem;display:flex;flex-wrap:wrap;gap:2.5rem;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        <div id="portfolioSummary" style="font-size:1.15rem;font-weight:500;"></div>
+        <div id="portfolioHoldingsCount" style="font-size:1.05rem;color:var(--muted-text);font-weight:600;"></div>
+        <div style="display:flex;gap:1rem;align-items:center;">
+          <button id="showOverviewBtn" class="btn" style="font-size:0.98rem;">How To</button>
+          <button id="showGlossaryBtn" class="btn" style="font-size:0.98rem;">Show Glossary</button>
+        </div>
+      </div>
+    </div>
+    <h3 style="margin-top:2rem;margin-bottom:0.5rem;">Asset Class Breakdown</h3>
+    <p style="margin-bottom:0.5rem;">The table below aggregates your holdings by asset class. Whenever you add or remove a holding, these totals update automatically. If you prefer a visual breakdown, toggle the chart view in the holdings section.</p>
     <table>
-      <thead><tr><th>Asset Class</th><th>Total Weight</th></tr></thead>
+      <thead><tr><th>Asset Class</th><th>Weight</th></tr></thead>
       <tbody id="categoryWeightsBody"></tbody>
     </table>
   </section>
@@ -505,8 +554,11 @@
   <!-- Holdings section with dynamic inputs -->
   <section class="card" id="holdings">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
-      <h2 style="margin:0;">4. Holdings</h2>
-      <button id="toggleHoldingsView" class="btn">Switch to Pie Chart</button>
+  <h2 style="margin:0;">2. Holdings</h2>
+      <div style="display:flex;gap:0.5rem;">
+        <button id="toggleHoldingsView" class="btn">Switch to Pie Chart</button>
+        <button id="downloadHoldingsCSV" class="btn">Download Holdings as CSV</button>
+      </div>
     </div>
     <p>Add positions to your portfolio.  Enter fund metrics manually or attempt to fetch them automatically.</p>
     <div class="input-row">
@@ -583,7 +635,7 @@
 
   <!-- Contribution allocator -->
   <section class="card" id="contribution">
-    <h2>5. Contribution Allocator</h2>
+  <h2>3. Contribution Allocator</h2>
     <p>Allocate a lump sum according to your target weights. Enter an amount and see how much goes to each holding.</p>
     <div class="input-group" style="max-width:200px;">
       <label for="contributionInput">Contribution Amount ($)</label>
@@ -595,7 +647,7 @@
 
   <!-- Income calculator -->
   <section class="card" id="income-calc">
-    <h2>6. Income Calculator</h2>
+  <h2>4. Income Calculator</h2>
 <p>This calculator provides a <strong>theoretical estimate</strong> of your portfolio’s income based on a constant weighted average distribution yield. The yield is automatically calculated from your holdings in the portfolio section, while you can adjust the current portfolio value using the slider (in $1,000 increments) to explore different scenarios. The display includes:</p>
 <ul>
   <li><strong>Annual, Quarterly, and Monthly Income</strong></li>
@@ -628,7 +680,7 @@
 
   <!-- Growth projection -->
   <section class="card" id="growth">
-    <h2>7. Growth &amp; Income Projection</h2>
+  <h2>5. Growth Projection</h2>
 <p>This chart provides a <strong>theoretical projection</strong> of how your portfolio might grow over time based on a constant weighted average annual return. The starting amount and return rate are automatically calculated from your inputs in other sections of the portfolio tool. The projection includes:</p>
 <ul>
   <li><strong>Total Contributions</strong></li>
@@ -693,8 +745,8 @@
   <footer style="margin:2rem; text-align:center; color: var(--muted-text); font-size:0.85rem;">
     <p>© 2025 JoshDisciple. This tool is for educational purposes only and does not constitute financial advice.</p>
     <p>Created by <a href="https://twitter.com/JoshDisciple" target="_blank" style="color: var(--accent);">@JoshDisciple</a></p>
-	<p>Version: 1.1.5 | Release Date: Aug 9, 2025</p>
-	<p>Support development of this tool on <a href="https://www.patreon.com/c/JoshDisciple"> Patreon<a/></p>
+    <p>Version: 1.1.7 | Release Date: Aug 10, 2025</p>
+    <p>Support development of this tool on <a href="https://www.patreon.com/c/JoshDisciple"> Patreon<a/></p>
   </footer>
 
   <!-- Sticky Income Summary Bar -->
@@ -708,6 +760,130 @@
   </div>
 
   <script>
+  // --- New Feature: Download Holdings as CSV ---
+  document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('downloadHoldingsCSV');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        if (!holdings.length) {
+          showCustomAlert('No holdings to export.');
+          return;
+        }
+        const rows = [['Name','Ticker','Class','Weight','Yield','CAGR','Expense','Schedule','DRIP']];
+        holdings.forEach(h => {
+          rows.push([
+            h.name,
+            h.ticker,
+            h.class,
+            h.weight,
+            h.yield,
+            h.cagr,
+            h.expense,
+            h.schedule,
+            h.drip ? 'ON' : 'OFF'
+          ]);
+        });
+        downloadCSV('holdings.csv', rows);
+      });
+    }
+  });
+
+  // --- Overview and Glossary Modal Logic ---
+  document.addEventListener('DOMContentLoaded', function() {
+    var overviewBtn = document.getElementById('showOverviewBtn');
+    var overviewModal = document.getElementById('overviewModal');
+      var overviewModalInner = document.getElementById('overviewModalInner');
+    var closeOverview = document.getElementById('closeOverviewModal');
+    if (overviewBtn && overviewModal && closeOverview) {
+      overviewBtn.addEventListener('click', function() {
+          overviewModal.style.display = 'flex';
+          setTimeout(function() {
+            overviewModalInner.classList.add('show');
+          }, 10);
+      });
+      closeOverview.addEventListener('click', function() {
+          overviewModalInner.classList.remove('show');
+          setTimeout(function() {
+            overviewModal.style.display = 'none';
+          }, 350);
+      });
+      overviewModal.addEventListener('click', function(e) {
+          if (e.target === overviewModal) {
+            overviewModalInner.classList.remove('show');
+            setTimeout(function() {
+              overviewModal.style.display = 'none';
+            }, 350);
+          }
+      });
+    }
+    var glossaryBtn = document.getElementById('showGlossaryBtn');
+    var glossaryModal = document.getElementById('glossaryModal');
+      var glossaryModalInner = document.getElementById('glossaryModalInner');
+    var closeGlossary = document.getElementById('closeGlossaryModal');
+    if (glossaryBtn && glossaryModal && closeGlossary) {
+      glossaryBtn.addEventListener('click', function() {
+          glossaryModal.style.display = 'flex';
+          setTimeout(function() {
+            glossaryModalInner.classList.add('show');
+          }, 10);
+      });
+      closeGlossary.addEventListener('click', function() {
+          glossaryModalInner.classList.remove('show');
+          setTimeout(function() {
+            glossaryModal.style.display = 'none';
+          }, 350);
+      });
+      glossaryModal.addEventListener('click', function(e) {
+          if (e.target === glossaryModal) {
+            glossaryModalInner.classList.remove('show');
+            setTimeout(function() {
+              glossaryModal.style.display = 'none';
+            }, 350);
+          }
+      });
+    }
+  });
+  function updatePortfolioSummary() {
+    var nameSpan = document.getElementById('portfolioSummaryName');
+    if (nameSpan) {
+      nameSpan.textContent = getActivePortfolioName();
+    }
+    var summaryDiv = document.getElementById('portfolioSummary');
+    var countDiv = document.getElementById('portfolioHoldingsCount');
+    if (!holdings.length) {
+      if (summaryDiv) summaryDiv.innerHTML = '<em>No holdings in portfolio.</em>';
+      if (countDiv) countDiv.textContent = '';
+      return;
+    }
+    let totalWeight = 0, totalYield = 0, totalCAGR = 0, totalExpense = 0;
+    holdings.forEach(h => {
+      const w = parseFloat(h.weight) || 0;
+      totalWeight += w;
+      totalYield += w * (parseFloat(h.yield) || 0) / 100;
+      totalCAGR += w * (parseFloat(h.cagr) || 0) / 100;
+      totalExpense += w * (parseFloat(h.expense) || 0) / 100;
+    });
+  const summary = `<span style="color:var(--accent);font-weight:600;">Total Weight:</span> ${totalWeight.toFixed(2)}% | <span style="color:var(--accent);font-weight:600;">Weighted Yield:</span> ${(totalYield).toFixed(2)}% | <span style="color:var(--accent);font-weight:600;">Weighted Annual Growth:</span> ${(totalCAGR).toFixed(2)}% | <span style="color:var(--accent);font-weight:600;">Weighted Expense:</span> ${(totalExpense).toFixed(2)}%`;
+    if (summaryDiv) summaryDiv.innerHTML = summary;
+    if (countDiv) countDiv.textContent = `Holdings: ${holdings.length}`;
+  }
+  // Call on load and after holdings change
+  document.addEventListener('DOMContentLoaded', updatePortfolioSummary);
+  function updateAllSummaries() {
+    updatePortfolioSummary();
+    // ...existing code...
+  }
+  // Patch saveHoldings and renderHoldingsTable to call updatePortfolioSummary
+  const origSaveHoldings = saveHoldings;
+  saveHoldings = function() {
+    origSaveHoldings.apply(this, arguments);
+    updatePortfolioSummary();
+  };
+  const origRenderHoldingsTable = renderHoldingsTable;
+  renderHoldingsTable = function() {
+    origRenderHoldingsTable.apply(this, arguments);
+    updatePortfolioSummary();
+  };
   // Portfolio Manager: handles saving, loading, renaming, and deleting portfolios
   const PORTFOLIOS_KEY = 'customPortfolioList';
   const ACTIVE_PORTFOLIO_KEY = 'customPortfolioActive';
@@ -740,13 +916,14 @@
   function loadPortfolio(name) {
     const portfolios = getPortfolios();
     if (portfolios[name]) {
+      setActivePortfolioName(name);
       holdings = portfolios[name];
       renderHoldingsTable();
       updateCategoryWeights();
       updateContributionAllocation();
       updateIncome();
       updateGrowthChart();
-      setActivePortfolioName(name);
+      updatePortfolioSummary();
     }
   }
   function addNewPortfolio(name) {
@@ -756,27 +933,29 @@
       showCustomAlert('A portfolio with that name already exists.');
       return;
     }
-    portfolios[name] = [];
-    savePortfolios(portfolios);
-    setActivePortfolioName(name);
-    holdings = [];
-    saveHoldings();
-    renderHoldingsTable();
-    updateCategoryWeights();
-    updateContributionAllocation();
-    updateIncome();
-    updateGrowthChart();
-    updatePortfolioDropdown();
-    showCustomAlert('New blank portfolio "' + name + '" created and loaded.');
+  portfolios[name] = [];
+  savePortfolios(portfolios);
+  setActivePortfolioName(name);
+  holdings = [];
+  saveHoldings();
+  renderHoldingsTable();
+  updateCategoryWeights();
+  updateContributionAllocation();
+  updateIncome();
+  updateGrowthChart();
+  updatePortfolioDropdown();
+  updatePortfolioSummary();
+  showCustomAlert('New blank portfolio "' + name + '" created and loaded.');
   }
   function saveCurrentPortfolio(name) {
     if (!name) return;
     const portfolios = getPortfolios();
     portfolios[name] = holdings;
     savePortfolios(portfolios);
-    setActivePortfolioName(name);
-    updatePortfolioDropdown();
-    showCustomAlert('Portfolio saved as "' + name + '".');
+  setActivePortfolioName(name);
+  updatePortfolioDropdown();
+  updatePortfolioSummary();
+  showCustomAlert('Portfolio saved as "' + name + '".');
   }
   function renamePortfolio(oldName, newName) {
     if (!oldName || !newName) return;
@@ -788,9 +967,10 @@
     portfolios[newName] = portfolios[oldName];
     delete portfolios[oldName];
     savePortfolios(portfolios);
-    setActivePortfolioName(newName);
-    updatePortfolioDropdown();
-    showCustomAlert('Portfolio renamed to "' + newName + '".');
+  setActivePortfolioName(newName);
+  updatePortfolioDropdown();
+  updatePortfolioSummary();
+  showCustomAlert('Portfolio renamed to "' + newName + '".');
   }
   function deletePortfolio(name) {
     const portfolios = getPortfolios();
@@ -801,12 +981,121 @@
     delete portfolios[name];
     savePortfolios(portfolios);
     const first = Object.keys(portfolios)[0];
-    setActivePortfolioName(first);
-    loadPortfolio(first);
-    updatePortfolioDropdown();
-    showCustomAlert('Portfolio deleted.');
+  setActivePortfolioName(first);
+  loadPortfolio(first);
+  updatePortfolioDropdown();
+  updatePortfolioSummary();
+  showCustomAlert('Portfolio deleted.');
   }
   document.addEventListener('DOMContentLoaded', () => {
+    // Compare Portfolios button logic
+    const compareBtn = document.getElementById('comparePortfoliosBtn');
+    const compareModal = document.getElementById('comparePortfoliosModal');
+    const compareModalInner = document.getElementById('comparePortfoliosModalInner');
+    const closeCompare = document.getElementById('closeComparePortfoliosModal');
+    if (compareBtn && compareModal && closeCompare) {
+      compareBtn.addEventListener('click', function() {
+        compareModal.style.display = 'flex';
+        setTimeout(function() {
+          compareModalInner.classList.add('show');
+        }, 10);
+        renderComparePortfolioSelectors();
+      });
+      closeCompare.addEventListener('click', function() {
+        compareModalInner.classList.remove('show');
+        setTimeout(function() {
+          compareModal.style.display = 'none';
+        }, 350);
+      });
+      compareModal.addEventListener('click', function(e) {
+        if (e.target === compareModal) {
+          compareModalInner.classList.remove('show');
+          setTimeout(function() {
+            compareModal.style.display = 'none';
+          }, 350);
+        }
+      });
+    }
+
+    function renderComparePortfolioSelectors() {
+      const portfolios = getPortfolios();
+      const selectorDiv = document.getElementById('comparePortfolioSelectors');
+      selectorDiv.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+        const select = document.createElement('select');
+        select.className = 'styled-input';
+        select.style.minWidth = '180px';
+        select.innerHTML = '<option value="">Select Portfolio</option>';
+        Object.keys(portfolios).forEach(name => {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          select.appendChild(opt);
+        });
+        select.onchange = renderComparePortfolioResults;
+        selectorDiv.appendChild(select);
+      }
+      renderComparePortfolioResults();
+    }
+
+    function renderComparePortfolioResults() {
+      const portfolios = getPortfolios();
+      const selectorDiv = document.getElementById('comparePortfolioSelectors');
+      const selects = selectorDiv.querySelectorAll('select');
+      const selected = Array.from(selects).map(s => s.value).filter(v => v);
+      const resultsDiv = document.getElementById('comparePortfolioResults');
+      if (selected.length === 0) {
+        resultsDiv.innerHTML = '<em>Select portfolios to compare.</em>';
+        return;
+      }
+      // Gather metrics for each selected portfolio
+      const metrics = selected.map(name => {
+        const h = portfolios[name] || [];
+        let totalWeight = 0, totalYield = 0, totalCAGR = 0, totalExpense = 0;
+        h.forEach(holding => {
+          const w = parseFloat(holding.weight) || 0;
+          totalWeight += w;
+          totalYield += w * (parseFloat(holding.yield) || 0) / 100;
+          totalCAGR += w * (parseFloat(holding.cagr) || 0) / 100;
+          totalExpense += w * (parseFloat(holding.expense) || 0) / 100;
+        });
+        return {
+          name,
+          holdings: h,
+          totalWeight: totalWeight.toFixed(2),
+          weightedYield: totalYield.toFixed(2),
+          weightedCAGR: totalCAGR.toFixed(2),
+          weightedExpense: totalExpense.toFixed(2)
+        };
+      });
+      // Build comparison table only (metrics)
+  let html = '<div style="width:100%;">';
+  html += '<table style="width:100%;border-collapse:collapse;table-layout:fixed;">';
+      html += '<thead><tr>';
+      html += '<th>Metric</th>';
+      metrics.forEach(m => {
+        html += `<th style="color:var(--accent);font-weight:600;width:16%;word-break:break-word;">${m.name}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+      html += `<tr><td>Weighted Yield (%)</td>${metrics.map(m => `<td>${m.weightedYield}</td>`).join('')}</tr>`;
+      html += `<tr><td>Weighted Growth (%)</td>${metrics.map(m => `<td>${m.weightedCAGR}</td>`).join('')}</tr>`;
+      html += `<tr><td>Weighted Expense (%)</td>${metrics.map(m => `<td>${m.weightedExpense}</td>`).join('')}</tr>`;
+      html += `<tr><td>Holdings Count</td>${metrics.map(m => `<td>${m.holdings.length}</td>`).join('')}</tr>`;
+      html += '</tbody></table></div>';
+      html += `<style>
+        #comparePortfoliosModalInner table th, #comparePortfoliosModalInner table td { font-size: 0.98em; padding: 0.7em 0.3em; }
+        @media (max-width: 1200px) {
+          #comparePortfoliosModalInner table th, #comparePortfoliosModalInner table td { font-size: 0.92em; }
+        }
+        @media (max-width: 900px) {
+          #comparePortfoliosModalInner table th, #comparePortfoliosModalInner table td { font-size: 0.88em; }
+        }
+        @media (max-width: 700px) {
+          #comparePortfoliosModalInner table th, #comparePortfoliosModalInner table td { font-size: 0.82em; }
+        }
+      </style>`;
+      resultsDiv.innerHTML = html;
+    }
   // Portfolio dropdown: user must click Load to switch portfolios
     const select = document.getElementById('portfolioSelect');
     if (select) {
@@ -1479,7 +1768,7 @@
       modal.style.background = 'rgba(0,0,0,0.45)';
       modal.style.display = 'none';
       modal.style.zIndex = '99999';
-  modal.innerHTML = `<div style="position:relative;max-width:820px;margin:5vh auto;background:var(--card-bg);border-radius:14px;padding:2rem;box-shadow:0 8px 32px rgba(0,0,0,0.25);">
+  modal.innerHTML = `<div class="modal-fade" id="growthBreakdownModalInner" style="position:relative;max-width:820px;margin:5vh auto;background:var(--card-bg);border-radius:14px;padding:2rem;box-shadow:0 16px 48px rgba(0,0,0,0.30);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
           <button id="closeGrowthBreakdownModal" class="btn">Close</button>
           <button id="exportBreakdownCSV" class="btn" style="margin-left:auto;">Export Breakdown as CSV</button>
@@ -1550,6 +1839,9 @@
     // Button event
     breakdownBtn.onclick = function() {
       modal.style.display = 'flex';
+      setTimeout(function() {
+        document.getElementById('growthBreakdownModalInner').classList.add('show');
+      }, 10);
       // Attach exportBreakdownCSV event listener after modal and button are rendered
       const exportBtn = document.getElementById('exportBreakdownCSV');
       if (exportBtn) {
@@ -1572,9 +1864,21 @@
       const closeBtn = document.getElementById('closeGrowthBreakdownModal');
       if (closeBtn) {
         closeBtn.onclick = function() {
-          modal.style.display = 'none';
+          document.getElementById('growthBreakdownModalInner').classList.remove('show');
+          setTimeout(function() {
+            modal.style.display = 'none';
+          }, 450);
         };
       }
+      // Click outside to close
+      modal.onclick = function(e) {
+        if (e.target === modal) {
+          document.getElementById('growthBreakdownModalInner').classList.remove('show');
+          setTimeout(function() {
+            modal.style.display = 'none';
+          }, 450);
+        }
+      };
     };
   }
 
@@ -1613,15 +1917,27 @@
     const labels = holdings.map(h => h.ticker);
     const data = holdings.map(h => parseFloat(h.weight));
     // Use accent color and harmonious variants for pie slices
-    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-    const cardBg = getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim();
+  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+  const cardBg = getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim();
+  // Detect light mode
+  const isLightMode = document.body.classList.contains('light-mode');
+  // Set pie chart background and text color for readability
+  const pieBg = isLightMode ? '#fff' : cardBg;
+  const pieText = isLightMode ? '#222' : getComputedStyle(document.documentElement).getPropertyValue('--text-colour').trim();
     // Generate harmonious colors based on accent
     function generateColors(base, count) {
       // Use accent, then rotate hue for others
       const accentHSL = base.startsWith('rgb') ? rgbToHsl(base) : hexToHsl(base);
       return Array.from({length: count}, (_, i) => {
         const hue = (accentHSL[0] + i * (360 / count)) % 360;
-        return `hsl(${hue}, ${accentHSL[1]}%, ${accentHSL[2]}%)`;
+        let sat = accentHSL[1];
+        let light = accentHSL[2];
+        if (isLightMode) {
+          // Make colors more pastel in light mode
+          sat = Math.max(40, Math.min(70, sat));
+          light = Math.max(70, Math.min(90, light + 20));
+        }
+        return `hsl(${hue}, ${sat}%, ${light}%)`;
       });
     }
     // Helper: convert rgb/hex to hsl
@@ -1669,15 +1985,15 @@
         plugins: {
           legend: {
             labels: {
-              color: getComputedStyle(document.documentElement).getPropertyValue('--text-colour').trim(),
+              color: pieText,
               font: { family: "'Inter', sans-serif", size: 14, weight: '600' }
             }
           },
           tooltip: {
-            backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--tooltip-bg').trim(),
-            titleColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
-            bodyColor: getComputedStyle(document.documentElement).getPropertyValue('--text-colour').trim(),
-            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+            backgroundColor: isLightMode ? '#fff' : getComputedStyle(document.documentElement).getPropertyValue('--tooltip-bg').trim(),
+            titleColor: accent,
+            bodyColor: pieText,
+            borderColor: accent,
             borderWidth: 1,
             cornerRadius: 10,
             padding: 12,
@@ -1687,15 +2003,19 @@
               label: ctx => `${ctx.label}: ${ctx.parsed}%`
             }
           }
-        }
+        },
+        layout: {
+          padding: 0
+        },
+        backgroundColor: pieBg
       }
     });
     // Add matching style to chart container
     const chartDiv = document.getElementById('holdingsChartContainer');
-    chartDiv.style.background = cardBg;
-    chartDiv.style.borderRadius = '16px';
-    chartDiv.style.boxShadow = '0 4px 18px rgba(0,0,0,0.25)';
-    chartDiv.style.padding = '16px';
+  chartDiv.style.background = pieBg;
+  chartDiv.style.borderRadius = '16px';
+  chartDiv.style.boxShadow = isLightMode ? '0 4px 18px rgba(0,0,0,0.10)' : '0 4px 18px rgba(0,0,0,0.25)';
+  chartDiv.style.padding = '16px';
   }
   
   //Custom Alertbox (now supports optional callback)
@@ -1707,7 +2027,10 @@
     const okayBtn = document.getElementById('customAlertOkay');
 
     alertMessage.textContent = message;
-    alertBox.style.display = 'flex';
+      alertBox.style.display = 'flex';
+      setTimeout(function() {
+        alertBox.classList.add('show');
+      }, 10);
 
     // Hide/show buttons based on whether confirmation is needed
     if (typeof onConfirm === 'function') {
@@ -1715,11 +2038,17 @@
       noBtn.style.display = '';
       okayBtn.style.display = 'none';
       yesBtn.onclick = () => {
-        alertBox.style.display = 'none';
+          alertBox.classList.remove('show');
+          setTimeout(function() {
+            alertBox.style.display = 'none';
+          }, 450);
         onConfirm();
       };
       noBtn.onclick = () => {
-        alertBox.style.display = 'none';
+          alertBox.classList.remove('show');
+          setTimeout(function() {
+            alertBox.style.display = 'none';
+          }, 450);
       };
       okayBtn.onclick = null;
     } else {
@@ -1727,7 +2056,10 @@
       noBtn.style.display = 'none';
       okayBtn.style.display = '';
       okayBtn.onclick = () => {
-        alertBox.style.display = 'none';
+          alertBox.classList.remove('show');
+          setTimeout(function() {
+            alertBox.style.display = 'none';
+          }, 450);
       };
       yesBtn.onclick = null;
       noBtn.onclick = null;
@@ -1941,8 +2273,14 @@
 
   // Theme toggle
   document.getElementById('themeToggle').addEventListener('click', () => {
-    document.body.classList.toggle('light-mode');
+    const isLight = document.body.classList.toggle('light-mode');
+    localStorage.setItem('themeMode', isLight ? 'light' : 'dark');
     updateGrowthChart(); // Add this line to refresh chart colors
+    // If pie chart is visible, update it for theme
+    const chartContainer = document.getElementById('holdingsChartContainer');
+    if (chartContainer && chartContainer.style.display === 'block') {
+      renderHoldingsPieChart();
+    }
   });
   
   // Sort Indicators
@@ -1967,6 +2305,13 @@ function updateSortIndicators() {
 
   // Initialise after DOM ready
   document.addEventListener('DOMContentLoaded', () => {
+    // Restore theme from localStorage
+    const savedTheme = localStorage.getItem('themeMode');
+    if (savedTheme === 'light') {
+      document.body.classList.add('light-mode');
+    } else {
+      document.body.classList.remove('light-mode');
+    }
   document.querySelectorAll('#holdings thead th[data-sort]').forEach(th => {
   th.style.cursor = 'pointer';
   th.addEventListener('click', () => {
@@ -2009,7 +2354,20 @@ document.addEventListener('click', function(e) {
 });
 
 
-    loadHoldings();
+    // On page load, always use the active portfolio from localStorage
+    const activePortfolio = getActivePortfolioName();
+    const portfolios = getPortfolios();
+    if (portfolios[activePortfolio]) {
+      holdings = portfolios[activePortfolio];
+    } else {
+      holdings = [];
+    }
+    renderHoldingsTable();
+    updateCategoryWeights();
+    updateContributionAllocation();
+    updateIncome();
+    updateGrowthChart();
+    updatePortfolioSummary();
     // Default slider value
     accountSlider.value = 0;
     updateIncome();
