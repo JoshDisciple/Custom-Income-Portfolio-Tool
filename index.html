@@ -165,24 +165,25 @@
       margin-top: 1rem;
     }
     .input-group {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 110px;
+  max-width: 180px;
     }
     .input-group label { font-size: 0.8rem; color: var(--muted-text); margin-bottom: 0.25rem; }
     .styled-input, select {
-      background-color: var(--card-bg);
-      color: var(--text-colour);
-      border: 1px solid var(--border-colour);
-      padding: 0.5rem 0.75rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      /* Remove default arrow for custom styling */
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      position: relative;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: var(--card-bg);
+  color: var(--text-colour);
+  border: 1px solid var(--border-colour);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  /* Remove default arrow for custom styling */
+  position: relative;
   }
 
   /* Custom dropdown arrow */
@@ -220,6 +221,9 @@
   }
   /* Firefox */
   input[type="number"].styled-input {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
     -moz-appearance: textfield;
   }
   input[type="number"].styled-input::-moz-inner-spin-button {
@@ -227,7 +231,6 @@
     color: var(--accent);
     border-radius: 6px;
   }
-    }
     .styled-input:focus, select:focus {
       outline: none;
       border-color: var(--accent);
@@ -271,7 +274,7 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
   white-space: pre-line;
   display: none;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  /* No transition for custom alerts */
 }
 
 
@@ -423,23 +426,7 @@
         <div style="position:relative;display:inline-block;">
     <button id="settingsDropdownBtn" class="btn" type="button">Settings ▼</button>
     <div id="settingsDropdown" style="display:none;position:absolute;right:0;top:110%;background:var(--card-bg);border:1px solid var(--border-colour);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.25);padding:1rem;z-index:2000;min-width:220px;">
-      <p style="margin:0 0 0.5rem 0;font-weight:600;">Settings</p>
-      <!-- Portfolio Manager UI -->
-      <div style="margin-bottom:0.75rem;">
-        <label for="portfolioSelect" style="font-size:0.95em;color:var(--muted-text);font-weight:600;">Portfolio Manager</label>
-        <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
-          <select id="portfolioSelect" class="styled-input" style="flex:2;min-width:0;"></select>
-          <button id="loadPortfolioBtn" class="btn" style="flex:1;white-space:nowrap;min-width:90px;">Load</button>
-        </div>
-        <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
-          <input type="text" id="portfolioNameInput" class="styled-input" placeholder="New portfolio name" style="flex:2;min-width:0;" />
-          <button id="addPortfolioBtn" class="btn" style="flex:1;white-space:nowrap;min-width:90px;">Add New</button>
-        </div>
-        <div style="display:flex;gap:0.5rem;">
-          <button id="renamePortfolioBtn" class="btn" style="flex:1;">Rename</button>
-          <button id="deletePortfolioBtn" class="btn" style="flex:1;background-color:#d9534f;color:#fff;border-color:#d9534f;">Delete</button>
-        </div>
-      </div>
+  <p style="margin:0 0 0.5rem 0;font-weight:600;">Settings</p>
       <button id="exportBtn" class="btn" style="width:100%;margin-bottom:0.5rem;">Export Configuration</button>
       <input type="file" id="importFile" accept="application/json" style="display:none;" />
       <button id="importBtn" class="btn" style="width:100%;margin-bottom:0.5rem;">Import Configuration</button>
@@ -448,7 +435,6 @@
         Default DRIP State: <span id="defaultDripStateLabel">ON</span>
       </button>
       <button id="resetAllBtn" class="btn" style="width:100%;margin-top:0.5rem;background-color:#d9534f;color:#fff;border-color:#d9534f;">Reset All Data</button>
-  <button id="comparePortfoliosBtn" class="btn" style="width:100%;margin-top:0.5rem;">Compare Portfolios</button>
     </div>
   </div>
       </nav>
@@ -464,7 +450,7 @@
       <button id="closeComparePortfoliosModal" class="btn" style="position:absolute;top:1rem;right:1rem;">Close</button>
       <h2>Compare Portfolios</h2>
   <p>Select up to five <strong>saved portfolios</strong> to compare their metrics side-by-side. Only portfolios that have been saved will appear in the dropdowns.</p>
-      <div id="comparePortfolioSelectors" style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;"></div>
+  <div id="comparePortfolioSelectors" style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:nowrap;overflow-x:auto;"></div>
       <div id="comparePortfolioResults"></div>
     </div>
   </div>
@@ -479,12 +465,15 @@
       <p><strong>Fetch Data:</strong> Enter a ticker symbol (e.g., <code>SCHD</code>, <code>VTSAX</code>, <code>AAPL</code>) to auto-fill fund details. You can edit any value before adding. Coverage varies by ticker.</p>
       <h3 style="margin-top:0;">How to Use</h3>
       <ol style="margin-bottom:1rem;">
-        <li><strong>Add Holdings:</strong> Enter or fetch fund details, then click <b>Add</b>.</li>
+        <li><strong>Add Holdings:</strong> Enter or fetch fund details, then click <b>Add</b>. Specify the Type (Stock, ETF, Mutual Fund) and Asset Category (US Equity, International Equity, Global Equity, Options-Income, Fixed Income, Real Estate, Cash, Commodity, Alternative, Balanced, Other) using dropdowns.</li>
+        <li><strong>Inline Edit Holdings:</strong> Click directly on any cell in the holdings table for Weight, Yield, CAGR, Type, Category, Expense, or Schedule to edit instantly. Dropdowns are used for Type and Category. Changes are saved on blur, Enter, or selection change.</li>
+        <li><strong>Ticker Links:</strong> Ticker symbols link to StockAnalysis.com, with correct format for stocks, ETFs, and mutual funds.</li>
         <li><strong>Adjust Weights:</strong> Set allocation for each holding (total must not exceed 100%).</li>
+        <li><strong>Portfolio Manager:</strong> Save, load, rename, and delete multiple portfolios. Use the sticky menu at the bottom to manage your portfolio sets and switch between them instantly.</li>
         <li><strong>Contribution Allocator:</strong> See how a lump sum would be distributed across holdings.</li>
         <li><strong>Income Calculator:</strong> Use the slider to estimate annual, quarterly, and monthly income.</li>
         <li><strong>Growth Projection:</strong> Model portfolio growth over time, with or without DRIP, and view Rule of 72 estimates for both scenarios.</li>
-        <li><strong>Breakdowns & Charts:</strong> View per-holding and per-asset-class breakdowns, and switch between table and pie chart views.</li>
+        <li><strong>Breakdowns & Charts:</strong> View per-holding and per-asset-category breakdowns, and switch between table and pie chart views.</li>
         <li><strong>Settings:</strong> Export/import portfolios, change theme, and manage DRIP defaults.</li>
       </ol>
       <ul style="margin-bottom:0.5rem;">
@@ -498,49 +487,59 @@
   </div>
   <div id="glossaryModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
   <div class="modal-fade" id="glossaryModalInner" style="background:var(--card-bg);color:var(--text-colour);max-width:820px;width:98vw;padding:2rem 2.5rem;border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,0.30);position:relative;">
-      <button id="closeGlossaryModal" class="btn" style="position:absolute;top:1rem;right:1rem;">Close</button>
-      <h2>Glossary &amp; Definitions</h2>
-      <dl style="margin-top:1rem;">
-        <dt><strong>Distribution Rate (Yield)</strong></dt>
-        <dd>The annualized dividend/distribution rate as a percentage of fund value.</dd>
-        <dt><strong>Average Annual Growth Rate (CAGR)</strong></dt>
-        <dd>The mean annual rate at which an investment has grown, used for projecting future value.</dd>
-        <dt><strong>Expense Ratio</strong></dt>
-        <dd>The annual fee charged by funds, expressed as a percentage of assets.</dd>
-        <dt><strong>DRIP (Dividend Reinvestment Plan)</strong></dt>
-        <dd>Automatically reinvests distributions into the holding, accelerating growth through compounding.</dd>
-        <dt><strong>Weighted Distribution Yield</strong></dt>
-        <dd>Portfolio-wide yield, calculated by weighting each holding’s yield by its allocation.</dd>
-        <dt><strong>Rule of 72</strong></dt>
-        <dd>Quick estimate of years required to double your investment: 72 divided by annual return. Shown for both DRIP and non-DRIP scenarios.</dd>
-        <dt><strong>Income Frequencies</strong></dt>
-        <dd>Funds may pay distributions weekly, monthly, quarterly, semi-annually, or annually.</dd>
-        <dt><strong>Breakdowns</strong></dt>
-        <dd>Income and growth breakdowns are shown by holding and by asset class.</dd>
-        <dt><strong>Chart Types</strong></dt>
-        <dd>Switch between pie chart and table views for allocations; growth chart supports bar and line modes.</dd>
-        <dt><strong>Local Privacy</strong></dt>
-        <dd>All portfolio data is stored locally in your browser; nothing is sent to a server.</dd>
-      </dl>
+  <button id="closeGlossaryModal" class="btn" style="position:absolute;top:1rem;right:1rem;">Close</button>
+  <h2>Glossary &amp; Definitions</h2>
+  <div style="max-height:70vh;overflow-y:auto;padding-right:1rem;">
+  <dl style="margin-top:1rem;">
+  <dt><strong>Inline Editing</strong></dt>
+  <dd>Click directly on any cell in the holdings table for Weight, Yield, CAGR, Type, Category, Expense, or Schedule to edit instantly. Dropdowns are used for Type and Category. Changes are saved on blur, Enter, or selection change.</dd>
+  <dt><strong>Type</strong></dt>
+  <dd>Specifies whether the holding is a Stock, ETF, or Mutual Fund. Used to generate the correct ticker link.</dd>
+  <dt><strong>Asset Category</strong></dt>
+  <dd>General category for the holding: US Equity, International Equity, Global Equity, Options-Income, Fixed Income, Real Estate, Cash, Commodity, Alternative, Balanced, or Other.</dd>
+  <dt><strong>Ticker Link</strong></dt>
+  <dd>Ticker symbols link to StockAnalysis.com. Stocks use /stocks/, ETFs use /etf/, and mutual funds use /quote/mutf/ in the URL.</dd>
+  <dt><strong>Distribution Rate (Yield)</strong></dt>
+  <dd>The annualized dividend/distribution rate as a percentage of fund value.</dd>
+  <dt><strong>Average Annual Growth Rate (CAGR)</strong></dt>
+  <dd>The mean annual rate at which an investment has grown, used for projecting future value.</dd>
+  <dt><strong>Expense Ratio</strong></dt>
+  <dd>The annual fee charged by funds, expressed as a percentage of assets.</dd>
+  <dt><strong>DRIP (Dividend Reinvestment Plan)</strong></dt>
+  <dd>Automatically reinvests distributions into the holding, accelerating growth through compounding.</dd>
+  <dt><strong>Weighted Distribution Yield</strong></dt>
+  <dd>Portfolio-wide yield, calculated by weighting each holding’s yield by its allocation.</dd>
+  <dt><strong>Rule of 72</strong></dt>
+  <dd>Quick estimate of years required to double your investment: 72 divided by annual return. Shown for both DRIP and non-DRIP scenarios.</dd>
+  <dt><strong>Income Frequencies</strong></dt>
+  <dd>Funds may pay distributions weekly, monthly, quarterly, semi-annually, or annually.</dd>
+  <dt><strong>Breakdowns</strong></dt>
+  <dd>Income and growth breakdowns are shown by holding and by asset class.</dd>
+  <dt><strong>Chart Types</strong></dt>
+  <dd>Switch between pie chart and table views for allocations; growth chart supports bar and line modes.</dd>
+  <dt><strong>Local Privacy</strong></dt>
+  <dd>All portfolio data is stored locally in your browser; nothing is sent to a server.</dd>
+  </dl>
+  </div>
     </div>
   </div>
 
   <!-- Overall Summary Card (Category Weights + Portfolio Summary) -->
   <section class="card" id="portfolio-overview">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;">
-  <h2 style="margin-bottom:0.5rem;">1. Portfolio Overview</h2>
-      <div style="color: var(--muted-text); font-size:1rem; font-weight:600; margin-left:1rem;">
-        <span style="background:var(--hover-bg);padding:0.4em 1em;border-radius:6px;">Selected Portfolio: <span id="portfolioSummaryName"></span></span>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;">
+      <h2 style="margin-bottom:0.5rem;">1. Portfolio Overview</h2>
+      <div style="display:flex;gap:1rem;align-items:center;">
+        <button id="showOverviewBtn" class="btn" style="font-size:0.98rem;">How To</button>
+        <button id="showGlossaryBtn" class="btn" style="font-size:0.98rem;">Show Glossary</button>
       </div>
     </div>
-    <div style="margin:1.2rem 0 1.5rem 0;">
-      <div style="background:var(--hover-bg);border:1px solid var(--border-colour);border-radius:10px;padding:1.1rem 1.5rem;display:flex;flex-wrap:wrap;gap:2.5rem;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+    <div style="margin:1.2rem 0 0 0;">
+      <div style="background:var(--hover-bg);border:1px solid var(--border-colour);border-radius:10px;padding:1.1rem 1.5rem;display:flex;flex-wrap:wrap;gap:2.5rem;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);position:relative;">
+        <div style="color: var(--muted-text);font-size:1rem;font-weight:600;min-width:220px;">
+          <span style="background:var(--hover-bg);padding:0.4em 1em;border-radius:6px;opacity:0.7;cursor:default;user-select:none;">Selected Portfolio: <span id="portfolioSummaryName"></span></span>
+        </div>
         <div id="portfolioSummary" style="font-size:1.15rem;font-weight:500;"></div>
         <div id="portfolioHoldingsCount" style="font-size:1.05rem;color:var(--muted-text);font-weight:600;"></div>
-        <div style="display:flex;gap:1rem;align-items:center;">
-          <button id="showOverviewBtn" class="btn" style="font-size:0.98rem;">How To</button>
-          <button id="showGlossaryBtn" class="btn" style="font-size:0.98rem;">Show Glossary</button>
-        </div>
       </div>
     </div>
     <h3 style="margin-top:2rem;margin-bottom:0.5rem;">Asset Class Breakdown</h3>
@@ -553,58 +552,104 @@
 
   <!-- Holdings section with dynamic inputs -->
   <section class="card" id="holdings">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
-  <h2 style="margin:0;">2. Holdings</h2>
-      <div style="display:flex;gap:0.5rem;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;">
+      <h2 style="margin:0;">2. Holdings</h2>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
         <button id="toggleHoldingsView" class="btn">Switch to Pie Chart</button>
         <button id="downloadHoldingsCSV" class="btn">Download Holdings as CSV</button>
       </div>
     </div>
     <p>Add positions to your portfolio.  Enter fund metrics manually or attempt to fetch them automatically.</p>
-    <div class="input-row">
-      <div class="input-group">
-        <label for="newName">Fund Name</label>
-        <input type="text" id="newName" class="styled-input" placeholder="e.g. Schwab U.S. Dividend Equity ETF" />
+    <div class="input-row" style="align-items:flex-end;">
+      <div style="display:flex;flex:1;gap:0.5rem;align-items:flex-end;">
+        <div class="input-group">
+          <label for="newName">Fund Name</label>
+          <input type="text" id="newName" class="styled-input" placeholder="e.g. Schwab U.S. Dividend Equity ETF" />
+        </div>
+        <div class="input-group">
+          <label for="newTicker">Ticker</label>
+          <input type="text" id="newTicker" class="styled-input" placeholder="e.g. SCHD" />
+        </div>
+        <div class="input-group">
+          <label for="newType">Type</label>
+          <select id="newType" class="styled-input">
+            <option value="stock">Stock</option>
+            <option value="etf">ETF</option>
+            <option value="mutual">Mutual Fund</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="newClass">Asset Category</label>
+          <select id="newClass" class="styled-input">
+            <option value="US Equity">US Equity</option>
+            <option value="International Equity">International Equity</option>
+            <option value="Global Equity">Global Equity</option>
+            <option value="Options-Income">Options-Income</option>
+            <option value="Fixed Income">Fixed Income</option>
+            <option value="Real Estate">Real Estate</option>
+            <option value="Cash">Cash</option>
+            <option value="Commodity">Commodity</option>
+            <option value="Alternative">Alternative</option>
+            <option value="Balanced">Balanced</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="newWeight">Weight (%)</label>
+          <input type="number" id="newWeight" class="styled-input" min="0" step="0.1" placeholder="0" />
+        </div>
+        <div class="input-group">
+          <label for="newYield">Distribution Rate (Yield %)</label>
+          <input type="number" id="newYield" class="styled-input" min="0" step="0.01" placeholder="3.89" />
+        </div>
+        <div class="input-group">
+          <label for="newCAGR">Average Annual Growth Rate (%)</label>
+          <input type="number" id="newCAGR" class="styled-input" min="0" step="0.1" placeholder="10" />
+<style>
+  /* Holdings input row spacing fix */
+  #holdings .input-row > div:first-child {
+    gap: 1.2rem !important;
+  }
+  #holdings .input-group {
+    min-width: 130px;
+    max-width: 220px;
+  }
+  label[for="newCAGR"] {
+    white-space: nowrap;
+  }
+</style>
+        </div>
+        <div class="input-group">
+          <label for="newExpense">Expense Ratio (%)</label>
+          <input type="number" id="newExpense" class="styled-input" min="0" step="0.01" placeholder="0.06" />
+        </div>
+        <div class="input-group">
+          <label for="newType">Type</label>
+          <select id="newType" class="styled-input">
+            <option value="stock">Stock</option>
+            <option value="etf">ETF</option>
+            <option value="mutual">Mutual Fund</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="newSchedule">Payment Schedule</label>
+          <select id="newSchedule" class="styled-input">
+              <option value="none">None</option>
+              <option value="irregular">Irregular</option>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="semi">Semi‑Annually</option>
+              <option value="annual">Annually</option>
+              <option value="weekly">Weekly</option>
+          </select>
+        </div>
       </div>
-      <div class="input-group">
-        <label for="newTicker">Ticker</label>
-        <input type="text" id="newTicker" class="styled-input" placeholder="e.g. SCHD" />
+      <div style="display:flex;flex-direction:column;gap:0.5rem;margin-left:0.5rem;align-items:flex-end;">
+        <div style="display:flex;gap:0.5rem;">
+          <button id="fetchMetrics" class="btn" style="flex:0 0 auto;">Fetch</button>
+          <button id="addHolding" class="btn" style="flex:0 0 auto;">Add</button>
+        </div>
       </div>
-      <div class="input-group">
-        <label for="newClass">Asset Class</label>
-        <input type="text" id="newClass" class="styled-input" placeholder="e.g. Dividend Growth" />
-      </div>
-      <div class="input-group">
-        <label for="newWeight">Weight (%)</label>
-        <input type="number" id="newWeight" class="styled-input" min="0" step="0.1" placeholder="0" />
-      </div>
-      <div class="input-group">
-  <label for="newYield">Distribution Rate (Yield %)</label>
-  <input type="number" id="newYield" class="styled-input" min="0" step="0.01" placeholder="3.89" />
-      </div>
-      <div class="input-group">
-        <label for="newCAGR">Average Annual Growth Rate (%)</label>
-        <input type="number" id="newCAGR" class="styled-input" min="0" step="0.1" placeholder="10" />
-      </div>
-      <div class="input-group">
-        <label for="newExpense">Expense Ratio (%)</label>
-        <input type="number" id="newExpense" class="styled-input" min="0" step="0.01" placeholder="0.06" />
-      </div>
-      <div class="input-group">
-        <label for="newSchedule">Payment Schedule</label>
-        <select id="newSchedule" class="styled-input">
-          <option value="monthly">Monthly</option>
-          <option value="quarterly">Quarterly</option>
-          <option value="semi">Semi‑Annually</option>
-          <option value="annual">Annually</option>
-          <option value="weekly">Weekly</option>
-        </select>
-      </div>
-      <div class="input-group" style="flex-basis:100%;display:flex;align-items:flex-end;gap:0.5rem;">
-	<button id="fetchMetrics" class="btn" style="flex:0 0 auto;">Fetch</button>
-	<button id="addHolding" class="btn" style="flex:1;">Add</button>
-	</div>
-
     </div>
     <div style="margin-top:1rem;overflow-x:auto;">
       <table>
@@ -612,6 +657,7 @@
   <tr>
     <th data-sort="name"><span>Name</span></th>
     <th data-sort="ticker"><span>Ticker</span></th>
+    <th data-sort="type"><span>Type</span></th>
     <th data-sort="class"><span>Class</span></th>
     <th data-sort="weight"><span>Weight (%)</span></th>
     <th data-sort="yield"><span>Yield</span></th>
@@ -635,101 +681,110 @@
 
   <!-- Contribution allocator -->
   <section class="card" id="contribution">
-  <h2>3. Contribution Allocator</h2>
-    <p>Allocate a lump sum according to your target weights. Enter an amount and see how much goes to each holding.</p>
-    <div class="input-group" style="max-width:200px;">
-      <label for="contributionInput">Contribution Amount ($)</label>
-      <input type="number" id="contributionInput" class="styled-input" min="0" step="100" value="0" />
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;">
+    <h2>3. Contribution Allocator</h2>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+      <button id="exportContributionCSV" class="btn">Export Allocation as CSV</button>
     </div>
-    <button id="exportContributionCSV" class="btn" style="margin-top:0.5rem;">Export Allocation as CSV</button>
-    <div id="allocationBreakdown" style="margin-top:1rem; display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.75rem;"></div>
+  </div>
+  <p>Allocate a lump sum according to your target weights. Enter an amount and see how much goes to each holding.</p>
+  <div class="input-group" style="max-width:200px;">
+    <label for="contributionInput">Contribution Amount ($)</label>
+    <input type="number" id="contributionInput" class="styled-input" min="0" step="100" value="0" />
+  </div>
+  <div id="allocationBreakdown" style="margin-top:1rem; display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.75rem;"></div>
   </section>
 
   <!-- Income calculator -->
   <section class="card" id="income-calc">
-  <h2>4. Income Calculator</h2>
-<p>This calculator provides a <strong>theoretical estimate</strong> of your portfolio’s income based on a constant weighted average distribution yield. The yield is automatically calculated from your holdings in the portfolio section, while you can adjust the current portfolio value using the slider (in $1,000 increments) to explore different scenarios. The display includes:</p>
-<ul>
-  <li><strong>Annual, Quarterly, and Monthly Income</strong></li>
-  <li><strong>Income by Holding</strong> – individual security breakdown</li>
-  <li><strong>Income by Asset Class</strong> – category-level breakdown</li>
-</ul>
-<p>Results are for illustrative purposes only and do not represent actual or guaranteed income.</p>
-
-    <!-- Allow the slider to span the full width of the card for fine‑tuned adjustments -->
-    <div class="input-group" style="width:100%;">
-      <label for="accountSlider">Portfolio Value (<span id="sliderVal">$0</span>)</label>
-      <!-- Step reduced to $1000 increments for finer control -->
-      <input type="range" id="accountSlider" min="0" max="2000000" step="1000" value="0" />
-    </div>
-    <div style="margin-top:0.5rem;">
-      <strong>Weighted Distribution Yield:</strong> <span id="weightedYield">0.00%</span>
-    </div>
-    <div class="result-box" style="margin-top:1rem;font-size:1.1rem;">
-      <strong>Annual:</strong> <span id="annualIncome">$0</span> |
-      <strong>Quarterly:</strong> <span id="quarterIncome">$0</span> |
-      <strong>Monthly:</strong> <span id="monthlyIncome">$0</span>
-    </div>
-    <div id="incomeToggleBtns" style="margin-top:1rem; display:flex; flex-wrap:wrap; gap:0.5rem;">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;">
+    <h2>4. Income Calculator</h2>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
       <button id="toggleDetailedIncome" class="btn">Show Per-Holding Breakdown</button>
       <button id="toggleClassIncome" class="btn">Show Asset‑Class Income</button>
     </div>
+  </div>
+  <p>This calculator provides a <strong>theoretical estimate</strong> of your portfolio’s income based on a constant weighted average distribution yield. The yield is automatically calculated from your holdings in the portfolio section, while you can adjust the current portfolio value using the slider (in $1,000 increments) to explore different scenarios. The display includes:</p>
+  <ul>
+    <li><strong>Annual, Quarterly, and Monthly Income</strong></li>
+    <li><strong>Income by Holding</strong> – individual security breakdown</li>
+    <li><strong>Income by Asset Class</strong> – category-level breakdown</li>
+  </ul>
+  <p>Results are for illustrative purposes only and do not represent actual or guaranteed income.</p>
+  <!-- Allow the slider to span the full width of the card for fine‑tuned adjustments -->
+  <div style="width:100%;">
+    <label for="accountSlider" style="display:block;margin-bottom:0.5rem;">Portfolio Value (<span id="sliderVal">$0</span>)</label>
+    <input type="range" id="accountSlider" min="0" max="2000000" step="1000" value="0" style="width:100%;" />
+  </div>
+  <div style="margin-top:0.5rem;">
+    <strong>Weighted Distribution Yield:</strong> <span id="weightedYield">0.00%</span>
+  </div>
+  <div class="result-box" style="margin-top:1rem;font-size:1.1rem;">
+    <strong>Annual:</strong> <span id="annualIncome">$0</span> |
+    <strong>Quarterly:</strong> <span id="quarterIncome">$0</span> |
+    <strong>Monthly:</strong> <span id="monthlyIncome">$0</span>
+  </div>
     <div id="detailedIncomeBreakdown" style="display:none;margin-top:1rem;"></div>
     <div id="classIncomeBreakdown" style="display:none;margin-top:1rem;"></div>
-  </section>
+</section>
 
   <!-- Growth projection -->
   <section class="card" id="growth">
-  <h2>5. Growth Projection</h2>
-<p>This chart provides a <strong>theoretical projection</strong> of how your portfolio might grow over time based on a constant weighted average annual return. The starting amount and return rate are automatically calculated from your inputs in other sections of the portfolio tool. The projection includes:</p>
-<ul>
-  <li><strong>Total Contributions</strong></li>
-  <li><strong>Price Growth</strong> – average annual growth only</li>
-  <li><strong>Total Growth</strong> – average annual growth plus reinvested distributions (DRIP)</li>
-</ul>
-<p>You can adjust your contribution amount, contribution frequency, and number of years to see different scenarios. Results are for illustrative purposes only and do not represent actual or guaranteed performance.</p>
-    <div class="input-row">
-      <!-- Show the portfolio value from the Income Calculator as the initial amount; no editing here -->
-      <div style="display: flex; flex-wrap: wrap; gap: 1.2rem; width: 100%; align-items: flex-end;">
-  <div class="input-group" style="min-width: 110px;">
-          <label>Initial ($)</label>
-          <div id="growthInitialDisplay" class="styled-input" style="background-color: transparent; border: none; padding-top: 0.5rem;">
-            $0
-          </div>
-        </div>
-  <div class="input-group" style="min-width: 140px;">
-          <label for="growthContribution">Contribution Amount($)</label>
-          <input type="number" id="growthContribution" class="styled-input" min="0" step="100" value="0" />
-        </div>
-  <div class="input-group" style="min-width: 130px;">
-          <label for="growthFrequency">Contribution Frequency</label>
-          <select id="growthFrequency" class="styled-input">
-            <option value="yearly" selected>Yearly</option>
-            <option value="monthly">Monthly</option>
-            <option value="biweekly">Biweekly</option>
-            <option value="weekly">Weekly</option>
-          </select>
-        </div>
-  <div class="input-group" style="min-width: 90px;">
-          <label for="growthYears">Years</label>
-          <input type="number" id="growthYears" class="styled-input" min="1" step="1" value="10" />
-        </div>
-        <div style="display:flex; align-items:center; gap:1.2rem; flex-wrap:wrap; margin-top:0.5rem;">
-          <div class="input-group" style="min-width: 120px; align-items: flex-start;">
-            <label for="weightedAnnualReturnNoDrip" style="margin-bottom:0.25rem; color: var(--muted-text); font-size: 0.75rem; white-space:nowrap;">Weighted Annual Return (No DRIP)</label>
-            <span id="weightedAnnualReturnNoDrip" style="font-weight:bold; color:#fdd000; font-size:1.05rem;">0.00%</span>
-          </div>
-          <div class="input-group" style="min-width: 120px; align-items: flex-start;">
-            <label for="weightedAnnualReturnWithDrip" style="margin-bottom:0.25rem; color: var(--muted-text); font-size: 0.75rem; white-space:nowrap;">Weighted Annual Return (With DRIP)</label>
-            <span id="weightedAnnualReturnWithDrip" style="font-weight:bold; color:#4cc9f0; font-size:1.05rem;">0.00%</span>
-          </div>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;">
+    <h2>5. Growth Projection</h2>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+      <button id="toggleGrowthChart" class="btn">Switch to Line Chart</button>
+      <button id="showGrowthBreakdownBtn" class="btn">Show Yearly Breakdown Table</button>
+    </div>
+  </div>
+  <p>This chart provides a <strong>theoretical projection</strong> of how your portfolio might grow over time based on a constant weighted average annual return. The starting amount and return rate are automatically calculated from your inputs in other sections of the portfolio tool. The projection includes:</p>
+  <ul>
+    <li><strong>Total Contributions</strong></li>
+    <li><strong>Price Growth</strong> – average annual growth only</li>
+    <li><strong>Total Growth</strong> – average annual growth plus reinvested distributions (DRIP)</li>
+  </ul>
+  <p>You can adjust your contribution amount, contribution frequency, and number of years to see different scenarios. Results are for illustrative purposes only and do not represent actual or guaranteed performance.</p>
+  <div class="input-row">
+    <!-- Show the portfolio value from the Income Calculator as the initial amount; no editing here -->
+    <div style="display: flex; flex-wrap: wrap; gap: 1.2rem; width: 100%; align-items: flex-end;">
+      <div class="input-group" style="min-width: 110px;">
+        <label>Initial ($)</label>
+        <div id="growthInitialDisplay" class="styled-input" style="background-color: transparent; border: none; padding-top: 0.5rem;">
+          $0
         </div>
       </div>
+      <div class="input-group" style="min-width: 140px;">
+        <label for="growthContribution">Contribution Amount($)</label>
+        <input type="number" id="growthContribution" class="styled-input" min="0" step="100" value="0" />
+      </div>
+      <div class="input-group" style="min-width: 130px;">
+        <label for="growthFrequency">Contribution Frequency</label>
+        <select id="growthFrequency" class="styled-input">
+          <option value="yearly" selected>Yearly</option>
+          <option value="monthly">Monthly</option>
+          <option value="biweekly">Biweekly</option>
+          <option value="weekly">Weekly</option>
+        </select>
+      </div>
+      <div class="input-group" style="min-width: 90px;">
+        <label for="growthYears">Years</label>
+        <input type="number" id="growthYears" class="styled-input" min="1" step="1" value="10" />
+      </div>
+      <div style="display:flex; align-items:center; gap:1.2rem; flex-wrap:wrap; margin-top:0.5rem;">
+        <div class="input-group" style="min-width: 110px; align-items: flex-start;">
+          <label for="weightedAnnualReturnNoDrip" style="margin-bottom:0.25rem; color: var(--muted-text); font-size: 0.72rem; white-space:nowrap;">Weighted Annual Return (No DRIP)</label>
+          <span id="weightedAnnualReturnNoDrip" style="font-weight:bold; color:#fdd000; font-size:0.98rem;">0.00%</span>
+        </div>
+        <div class="input-group" style="min-width: 110px; align-items: flex-start;">
+          <label for="weightedAnnualReturnWithDrip" style="margin-bottom:0.25rem; color: var(--muted-text); font-size: 0.72rem; white-space:nowrap;">Weighted Annual Return (With DRIP)</label>
+          <span id="weightedAnnualReturnWithDrip" style="font-weight:bold; color:#4cc9f0; font-size:0.98rem;">0.00%</span>
+        </div>
+  <div id="ruleOf72Estimate" style="margin-left:0.5rem; color:var(--muted-text); font-size:0.92rem; white-space:normal;max-width:none;overflow:visible;text-overflow:clip;"></div>
+      </div>
     </div>
-    <div style="display:flex; gap:0.75rem; margin-top:1rem;">
-  <button id="toggleGrowthChart" class="btn" style="margin-top:0;">Switch to Line Chart</button>
-  <button id="showGrowthBreakdownBtn" class="btn" style="margin-top:0;">Show Yearly Breakdown Table</button>
-  <div id="ruleOf72Estimate" style="margin-left:1rem; color:var(--muted-text); font-size:0.98rem;"></div>
+  </div>
+  <div style="display:flex; gap:0.75rem; margin-top:1rem;">
+  <!-- ruleOf72Estimate moved above -->
   </div>
     <!-- Smaller chart height for better fit on screen -->
     <div style="width:100%; display:flex; justify-content:center;">
@@ -745,21 +800,88 @@
   <footer style="margin:2rem; text-align:center; color: var(--muted-text); font-size:0.85rem;">
     <p>© 2025 JoshDisciple. This tool is for educational purposes only and does not constitute financial advice.</p>
     <p>Created by <a href="https://twitter.com/JoshDisciple" target="_blank" style="color: var(--accent);">@JoshDisciple</a></p>
-    <p>Version: 1.1.7 | Release Date: Aug 10, 2025</p>
+    <p>Version: 1.1.8 | Release Date: Aug 11, 2025</p>
     <p>Support development of this tool on <a href="https://www.patreon.com/c/JoshDisciple"> Patreon<a/></p>
   </footer>
 
   <!-- Sticky Income Summary Bar -->
   <div class="income-summary">
-    <div>
-      <strong>Summary:</strong> Annual Income: <span id="summaryAnnual">$0</span> | Quarterly: <span id="summaryQuarter">$0</span> | Monthly: <span id="summaryMonthly">$0</span>
-    </div>
-    <div>
-      Total Portfolio: <span id="summaryPortfolio">$0</span> | Annual Fees: <span id="summaryAnnualFees">$0</span>
+    <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;width:100%;">
+      <div id="stickyPortfolioDisplay" style="background:var(--hover-bg);padding:0.4rem 1rem;border-radius:6px;font-weight:600;color:var(--accent);cursor:pointer;position:relative;">
+        <span id="stickyPortfolioName"></span>
+        <span style="font-size:0.9em;color:var(--muted-text);margin-left:0.5em;">▼</span>
+        <div id="portfolioMenu" style="display:none;position:absolute;bottom:110%;left:0;min-width:340px;max-width:90vw;background:var(--card-bg);border:1px solid var(--border-colour);border-radius:10px;box-shadow:0 -4px 16px rgba(0,0,0,0.25);padding:1rem;z-index:2000;">
+          <label for="portfolioSelect" style="font-size:0.95em;color:var(--muted-text);font-weight:600;">Portfolio Manager</label>
+          <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+            <select id="portfolioSelect" class="styled-input" style="flex:2;min-width:0;"></select>
+            <button id="loadPortfolioBtn" class="btn" style="flex:1;white-space:nowrap;min-width:90px;">Load</button>
+          </div>
+          <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+            <input type="text" id="portfolioNameInput" class="styled-input" placeholder="New portfolio name" style="flex:2;min-width:0;" />
+            <button id="addPortfolioBtn" class="btn" style="flex:1;white-space:nowrap;min-width:90px;">Add New</button>
+          </div>
+          <div style="display:flex;gap:0.5rem;">
+            <button id="renamePortfolioBtn" class="btn" style="flex:1;">Rename</button>
+            <button id="deletePortfolioBtn" class="btn" style="flex:1;background-color:#d9534f;color:#fff;border-color:#d9534f;">Delete</button>
+          </div>
+          <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+            <button id="comparePortfoliosBtn" class="btn" style="flex:1;width:100%;">Compare Portfolios</button>
+          </div>
+        </div>
+      </div>
+      <span>
+        <strong>Summary:</strong> Annual Income: <span id="summaryAnnual">$0</span> | Quarterly: <span id="summaryQuarter">$0</span> | Monthly: <span id="summaryMonthly">$0</span>
+      </span>
+      <span style="margin-left:auto;white-space:nowrap;display:flex;align-items:center;gap:2.5rem;">
+        <span>
+          Total Portfolio Value: <span id="summaryPortfolio">$0</span> | Annual Fees: <span id="summaryAnnualFees">$0</span>
+        </span>
+      </span>
     </div>
   </div>
 
   <script>
+  // Sticky portfolio menu logic (improved)
+  document.addEventListener('DOMContentLoaded', function() {
+    var display = document.getElementById('stickyPortfolioDisplay');
+    var menu = document.getElementById('portfolioMenu');
+    if (display && menu) {
+      let menuOpen = false;
+      function openMenu() {
+        menu.style.display = 'block';
+        menuOpen = true;
+      }
+      function closeMenu() {
+        menu.style.display = 'none';
+        menuOpen = false;
+      }
+      display.addEventListener('click', function(e) {
+        if (!menuOpen) {
+          openMenu();
+        } else {
+          closeMenu();
+        }
+        e.stopPropagation();
+      });
+      menu.addEventListener('click', function(e) {
+        e.stopPropagation(); // allow interaction inside menu
+      });
+      document.addEventListener('click', function(e) {
+        if (menuOpen && !display.contains(e.target) && !menu.contains(e.target)) {
+          closeMenu();
+        }
+      });
+      // Hide menu after any action inside menu
+      ['loadPortfolioBtn','addPortfolioBtn','renamePortfolioBtn','deletePortfolioBtn'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('click', function() {
+            setTimeout(closeMenu, 200);
+          });
+        }
+      });
+    }
+  });
   // --- New Feature: Download Holdings as CSV ---
   document.addEventListener('DOMContentLoaded', function() {
     const btn = document.getElementById('downloadHoldingsCSV');
@@ -786,7 +908,28 @@
         downloadCSV('holdings.csv', rows);
       });
     }
+    // Update sticky portfolio name on load
+    updateStickyPortfolioName();
   });
+
+  function updateStickyPortfolioName() {
+    var stickyName = document.getElementById('stickyPortfolioName');
+    if (stickyName) {
+      stickyName.textContent = getActivePortfolioName();
+    }
+  }
+
+  // Patch portfolio change functions to update sticky name
+  const origSetActivePortfolioName = setActivePortfolioName;
+  setActivePortfolioName = function(name) {
+    origSetActivePortfolioName.apply(this, arguments);
+    updateStickyPortfolioName();
+  };
+  const origLoadPortfolio = loadPortfolio;
+  loadPortfolio = function(name) {
+    origLoadPortfolio.apply(this, arguments);
+    updateStickyPortfolioName();
+  };
 
   // --- Overview and Glossary Modal Logic ---
   document.addEventListener('DOMContentLoaded', function() {
@@ -863,9 +1006,9 @@
       totalCAGR += w * (parseFloat(h.cagr) || 0) / 100;
       totalExpense += w * (parseFloat(h.expense) || 0) / 100;
     });
-  const summary = `<span style="color:var(--accent);font-weight:600;">Total Weight:</span> ${totalWeight.toFixed(2)}% | <span style="color:var(--accent);font-weight:600;">Weighted Yield:</span> ${(totalYield).toFixed(2)}% | <span style="color:var(--accent);font-weight:600;">Weighted Annual Growth:</span> ${(totalCAGR).toFixed(2)}% | <span style="color:var(--accent);font-weight:600;">Weighted Expense:</span> ${(totalExpense).toFixed(2)}%`;
+  const summary = `<span style="color:var(--accent);font-weight:600;">Weighted Yield:</span> ${(totalYield).toFixed(2)}% | <span style="color:var(--accent);font-weight:600;">Weighted Annual Growth:</span> ${(totalCAGR).toFixed(2)}% | <span style="color:var(--accent);font-weight:600;">Weighted Expense:</span> ${(totalExpense).toFixed(2)}%`;
     if (summaryDiv) summaryDiv.innerHTML = summary;
-    if (countDiv) countDiv.textContent = `Holdings: ${holdings.length}`;
+    if (countDiv) countDiv.textContent = `Number of Holdings: ${holdings.length}`;
   }
   // Call on load and after holdings change
   document.addEventListener('DOMContentLoaded', updatePortfolioSummary);
@@ -924,6 +1067,11 @@
       updateIncome();
       updateGrowthChart();
       updatePortfolioSummary();
+      // Auto-update pie chart if visible
+      const chartContainer = document.getElementById('holdingsChartContainer');
+      if (chartContainer && chartContainer.style.display === 'block') {
+        renderHoldingsPieChart();
+      }
     }
   }
   function addNewPortfolio(name) {
@@ -1069,21 +1217,41 @@
         };
       });
       // Build comparison table only (metrics)
-  let html = '<div style="width:100%;">';
-  html += '<table style="width:100%;border-collapse:collapse;table-layout:fixed;">';
+      let html = '<div style="width:100%;">';
+      html += '<table style="width:100%;border-collapse:collapse;table-layout:fixed;">';
       html += '<thead><tr>';
-      html += '<th>Metric</th>';
+      html += '<th style="min-width:140px;max-width:220px;word-break:break-word;white-space:normal;">Metric</th>';
       metrics.forEach(m => {
-        html += `<th style="color:var(--accent);font-weight:600;width:16%;word-break:break-word;">${m.name}</th>`;
+        html += `<th style="color:var(--accent);font-weight:600;width:16%;word-break:break-word;white-space:normal;">${m.name}</th>`;
       });
       html += '</tr></thead><tbody>';
       html += `<tr><td>Weighted Yield (%)</td>${metrics.map(m => `<td>${m.weightedYield}</td>`).join('')}</tr>`;
       html += `<tr><td>Weighted Growth (%)</td>${metrics.map(m => `<td>${m.weightedCAGR}</td>`).join('')}</tr>`;
       html += `<tr><td>Weighted Expense (%)</td>${metrics.map(m => `<td>${m.weightedExpense}</td>`).join('')}</tr>`;
       html += `<tr><td>Holdings Count</td>${metrics.map(m => `<td>${m.holdings.length}</td>`).join('')}</tr>`;
+
+      // Hypothetical growth of $10,000 over 10 years for DRIP on and DRIP off
+      html += `<tr><td>Growth of $10,000 over 10 years (DRIP ON)</td>${metrics.map(m => {
+        // DRIP ON: includes yield
+        const rate = (parseFloat(m.weightedCAGR) + parseFloat(m.weightedYield)) / 100;
+        const fv = 10000 * Math.pow(1 + rate, 10);
+        return `<td>$${fv.toLocaleString(undefined, {maximumFractionDigits:2})}</td>`;
+      }).join('')}</tr>`;
+      html += `<tr><td>Growth of $10,000 over 10 years (DRIP OFF)</td>${metrics.map(m => {
+        // DRIP OFF: only CAGR
+        const rate = parseFloat(m.weightedCAGR) / 100;
+        const fv = 10000 * Math.pow(1 + rate, 10);
+        return `<td>$${fv.toLocaleString(undefined, {maximumFractionDigits:2})}</td>`;
+      }).join('')}</tr>`;
+
       html += '</tbody></table></div>';
       html += `<style>
-        #comparePortfoliosModalInner table th, #comparePortfoliosModalInner table td { font-size: 0.98em; padding: 0.7em 0.3em; }
+        #comparePortfoliosModalInner table th, #comparePortfoliosModalInner table td {
+          font-size: 0.98em; padding: 0.7em 0.3em; word-break:break-word; white-space:normal;
+        }
+        #comparePortfoliosModalInner table th {
+          min-width:140px; max-width:220px;
+        }
         @media (max-width: 1200px) {
           #comparePortfoliosModalInner table th, #comparePortfoliosModalInner table td { font-size: 0.92em; }
         }
@@ -1205,17 +1373,25 @@
       });
     }
   });
-  /* Holdings data model: array of objects, each with name, ticker, class, weight, yield, cagr, expense, schedule, drip */
+  /* Holdings data model: array of objects, each with name, ticker, class, weight, yield, expense, schedule, drip */
 
   //
   
   const LS_KEY = 'customPortfolioHoldings';
   const API_KEY = 'XZCCWSGO24QFND4T';
   let holdings = [];
-  let chartType = 'bar';
+  let chartType = 'line';
   let growthChartInstance = null;
   let holdingsChart = null;
   const holdingsBody = document.getElementById('holdingsBody');
+
+  // Ensure toggle button label matches chart type on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('toggleGrowthChart');
+    if (toggleBtn) {
+      toggleBtn.textContent = chartType === 'bar' ? 'Switch to Line Chart' : 'Switch to Bar Chart';
+    }
+  });
   const categoryWeightsBody = document.getElementById('categoryWeightsBody');
   const contributionInput = document.getElementById('contributionInput');
   const allocationBreakdown = document.getElementById('allocationBreakdown');
@@ -1262,15 +1438,26 @@
     holdings.forEach((h, index) => {
       const tr = document.createElement('tr');
       tr.dataset.tooltip = `Yield: ${h.yield.toFixed(2)}%\nExpense: ${h.expense}%\nAvg Annual Growth: ${h.cagr}%`;
+      let linkType = 'stocks';
+      let linkUrl = '';
+      if (h.type === 'etf') {
+        linkType = 'etf';
+        linkUrl = `https://stockanalysis.com/${linkType}/${h.ticker.toLowerCase()}/`;
+      } else if (h.type === 'mutual') {
+        linkUrl = `https://stockanalysis.com/quote/mutf/${h.ticker.toLowerCase()}/`;
+      } else {
+        linkUrl = `https://stockanalysis.com/${linkType}/${h.ticker.toLowerCase()}/`;
+      }
       tr.innerHTML = `
         <td>${h.name}</td>
-        <td><a href="https://finance.yahoo.com/quote/${h.ticker}" target="_blank">${h.ticker}</a></td>
-        <td>${h.class}</td>
-        <td>${parseFloat(h.weight).toFixed(2)}%</td>
-        <td>${h.yield.toFixed(2)}%</td>
-        <td>${parseFloat(h.cagr).toFixed(2)}%</td>
-        <td>${parseFloat(h.expense).toFixed(2)}%</td>
-        <td>${h.schedule}</td>
+        <td><a href="${linkUrl}" target="_blank">${h.ticker}</a></td>
+        <td class="editable-cell" data-field="type" data-index="${index}">${h.type || ''}</td>
+        <td class="editable-cell" data-field="class" data-index="${index}">${h.class}</td>
+        <td class="editable-cell" data-field="weight" data-index="${index}">${parseFloat(h.weight).toFixed(2)}%</td>
+        <td class="editable-cell" data-field="yield" data-index="${index}">${h.yield.toFixed(2)}%</td>
+        <td class="editable-cell" data-field="cagr" data-index="${index}">${parseFloat(h.cagr).toFixed(2)}%</td>
+        <td class="editable-cell" data-field="expense" data-index="${index}">${parseFloat(h.expense).toFixed(2)}%</td>
+        <td class="editable-cell" data-field="schedule" data-index="${index}">${h.schedule}</td>
         <td><input type="checkbox" ${h.drip ? 'checked' : ''} data-index="${index}" class="drip-toggle" /></td>
         <td>
           <button data-index="${index}" class="btn btn-edit">Edit</button>
@@ -1281,6 +1468,112 @@
     });
     renderHoldingsTotals();
     attachRowEvents();
+    attachInlineEditEvents();
+  // Inline editing for table cells (Weight, Yield, CAGR)
+  function attachInlineEditEvents() {
+    holdingsBody.querySelectorAll('.editable-cell').forEach(cell => {
+      cell.addEventListener('click', function(e) {
+        if (cell.querySelector('input') || cell.querySelector('select')) return; // Already editing
+        const field = cell.getAttribute('data-field');
+        const idx = parseInt(cell.getAttribute('data-index'));
+        let value = holdings[idx][field];
+        // Remove % for display
+        if (typeof value === 'number') value = value.toFixed(2);
+        let input;
+        if (field === 'schedule') {
+          input = document.createElement('select');
+          input.className = 'styled-input';
+          ["none","irregular","monthly","quarterly","semi","annual","weekly"].forEach(optVal => {
+            const opt = document.createElement('option');
+            opt.value = optVal;
+            opt.textContent = optVal.charAt(0).toUpperCase() + optVal.slice(1).replace('semi','Semi‑Annually').replace('annual','Annually');
+            if (optVal === value) opt.selected = true;
+            input.appendChild(opt);
+          });
+        } else if (field === 'type') {
+          input = document.createElement('select');
+          input.className = 'styled-input';
+          [
+            {val: 'stock', label: 'Stock'},
+            {val: 'etf', label: 'ETF'},
+            {val: 'mutual', label: 'Mutual Fund'}
+          ].forEach(optObj => {
+            const opt = document.createElement('option');
+            opt.value = optObj.val;
+            opt.textContent = optObj.label;
+            if (optObj.val === value) opt.selected = true;
+            input.appendChild(opt);
+          });
+        } else if (field === 'class') {
+          input = document.createElement('select');
+          input.className = 'styled-input';
+          [
+            'US Equity',
+            'International Equity',
+            'Global Equity',
+            'Options-Income',
+            'Fixed Income',
+            'Real Estate',
+            'Cash',
+            'Commodity',
+            'Alternative',
+            'Balanced',
+            'Other'
+          ].forEach(optVal => {
+            const opt = document.createElement('option');
+            opt.value = optVal;
+            opt.textContent = optVal;
+            if (optVal === value) opt.selected = true;
+            input.appendChild(opt);
+          });
+        } else {
+          input = document.createElement('input');
+          input.type = 'number';
+          input.value = value;
+          input.className = 'styled-input';
+          input.style.width = '70px';
+          input.style.fontSize = '0.95em';
+          input.style.textAlign = 'right';
+          input.min = '0';
+          input.step = field === 'yield' || field === 'expense' ? '0.01' : '0.1';
+        }
+        cell.innerHTML = '';
+        cell.appendChild(input);
+        input.focus();
+        if (input.select) input.select();
+        // Save on blur or Enter/change
+        function saveEdit() {
+          let newVal;
+          if (field === 'schedule') {
+            newVal = input.value;
+          } else if (field === 'type') {
+            newVal = input.value;
+          } else if (field === 'class') {
+            newVal = input.value.trim();
+          } else {
+            newVal = parseFloat(input.value);
+            if (isNaN(newVal)) newVal = holdings[idx][field];
+          }
+          holdings[idx][field] = newVal;
+          saveHoldings();
+          renderHoldingsTable();
+        }
+        if (field === 'schedule' || field === 'type') {
+          input.addEventListener('change', saveEdit);
+          input.addEventListener('blur', saveEdit);
+        } else {
+          input.addEventListener('blur', saveEdit);
+          input.addEventListener('keydown', function(ev) {
+            if (ev.key === 'Enter') {
+              input.blur();
+            } else if (ev.key === 'Escape') {
+              renderHoldingsTable();
+            }
+          });
+        }
+      });
+    });
+  }
   }
 
   function renderHoldingsTotals() {
@@ -1323,6 +1616,9 @@
         const message = row.dataset.tooltip;
         tooltipDiv.textContent = message;
         tooltipDiv.style.display = 'block';
+        // Position at mouse
+        tooltipDiv.style.left = (e.pageX + 10) + 'px';
+        tooltipDiv.style.top = (e.pageY + 10) + 'px';
       });
       row.addEventListener('mousemove', e => {
         const x = e.pageX + 10;
@@ -1522,10 +1818,13 @@
     const resetBtn = document.getElementById('resetAllBtn');
     if (resetBtn) {
       resetBtn.addEventListener('click', function() {
-        showCustomAlert('Are you sure you want to reset all data? This will wipe your portfolio and settings.', function() {
-          localStorage.removeItem(LS_KEY);
-          localStorage.removeItem(DRIP_KEY);
-          setTimeout(function() { location.reload(); }, 300);
+        showCustomAlert('Are you sure you want to reset all data? This will wipe all saved portfolio and settings. We recommend exporting configuration before proceeding.', function() {
+            localStorage.removeItem(LS_KEY);
+            localStorage.removeItem(DRIP_KEY);
+            localStorage.removeItem('customPortfolioList');
+            localStorage.removeItem('customPortfolioActive');
+            localStorage.removeItem('themeMode');
+            setTimeout(function() { location.reload(); }, 300);
         });
       });
     }
@@ -2037,30 +2336,24 @@
       yesBtn.style.display = '';
       noBtn.style.display = '';
       okayBtn.style.display = 'none';
-      yesBtn.onclick = () => {
-          alertBox.classList.remove('show');
-          setTimeout(function() {
-            alertBox.style.display = 'none';
-          }, 450);
-        onConfirm();
-      };
-      noBtn.onclick = () => {
-          alertBox.classList.remove('show');
-          setTimeout(function() {
-            alertBox.style.display = 'none';
-          }, 450);
-      };
+    yesBtn.onclick = () => {
+      alertBox.classList.remove('show');
+      alertBox.style.display = 'none';
+      onConfirm();
+    };
+    noBtn.onclick = () => {
+      alertBox.classList.remove('show');
+      alertBox.style.display = 'none';
+    };
       okayBtn.onclick = null;
     } else {
       yesBtn.style.display = 'none';
       noBtn.style.display = 'none';
       okayBtn.style.display = '';
-      okayBtn.onclick = () => {
-          alertBox.classList.remove('show');
-          setTimeout(function() {
-            alertBox.style.display = 'none';
-          }, 450);
-      };
+    okayBtn.onclick = () => {
+      alertBox.classList.remove('show');
+      alertBox.style.display = 'none';
+    };
       yesBtn.onclick = null;
       noBtn.onclick = null;
     }
@@ -2372,7 +2665,64 @@ document.addEventListener('click', function(e) {
     accountSlider.value = 0;
     updateIncome();
   });
-  // ...existing code...
+  // Example portfolio: Dave Ramsey's suggested asset mix
+  const DAVE_RAMSEY_PORTFOLIO = [
+    { name: 'US Growth Fund', ticker: 'VIGAX', type: 'mutual', class: 'US Equity', weight: 25, yield: 0.43, cagr: 9.51, expense: 0.05, schedule: 'quarterly', drip: true },
+    { name: 'International Growth Fund', ticker: 'VTIAX', type: 'mutual', class: 'International Equity', weight: 25, yield: 2.74, cagr: 5.90, expense: 0.19, schedule: 'quarterly', drip: true },
+    { name: 'US Value Fund', ticker: 'VVIAX', type: 'mutual', class: 'US Equity', weight: 25, yield: 2.17, cagr: 7.47, expense: 0.05, schedule: 'quarterly', drip: true },
+    { name: 'US Small Cap Fund', ticker: 'VSMAX', type: 'mutual', class: 'US Equity', weight: 25, yield: 1.38, cagr: 8.32, expense: 0.05, schedule: 'quarterly', drip: true }
+  ];
+
+  // Add Dave Ramsey portfolio to saved portfolios if not present
+  document.addEventListener('DOMContentLoaded', () => {
+    const portfolios = getPortfolios();
+    if (!portfolios['Dave Ramsey Example']) {
+      portfolios['Dave Ramsey Example'] = DAVE_RAMSEY_PORTFOLIO;
+      savePortfolios(portfolios);
+    }
+  });
+  // Example portfolio: Conservative (Low Risk)
+  const CONSERVATIVE_PORTFOLIO = [
+    { name: 'Total Bond Market', ticker: 'BND', type: 'etf', class: 'Fixed Income', weight: 60, yield: 3.78, cagr: 3.05, expense: 0.03, schedule: 'monthly', drip: true },
+    { name: 'S&P 500 ETF', ticker: 'VOO', type: 'etf', class: 'US Equity', weight: 20, yield: 1.19, cagr: 14.49, expense: 0.03, schedule: 'quarterly', drip: true },
+    { name: 'Real Estate ETF', ticker: 'VNQ', type: 'etf', class: 'Real Estate', weight: 10, yield: 3.91, cagr: 7.35, expense: 0.13, schedule: 'quarterly', drip: true },
+    { name: 'Federal Money Market', ticker: 'VMFXX', type: 'mutual', class: 'Cash', weight: 10, yield: 4.49, cagr: 0.65, expense: 0.11, schedule: 'monthly', drip: false }
+  ];
+
+  // Example portfolio: Balanced (Moderate Risk)
+  const BALANCED_PORTFOLIO = [
+    { name: 'S&P 500 ETF', ticker: 'VOO', type: 'etf', class: 'US Equity', weight: 20, yield: 1.19, cagr: 14.49, expense: 0.03, schedule: 'quarterly', drip: true },
+    { name: 'International ETF', ticker: 'VXUS', type: 'etf', class: 'International Equity', weight: 20, yield: 2.78, cagr: 5.44, expense: 0.05, schedule: 'quarterly', drip: true },
+    { name: 'Total Bond Market', ticker: 'BND', type: 'etf', class: 'Fixed Income', weight: 60, yield: 3.78, cagr: 3.05, expense: 0.03, schedule: 'monthly', drip: true },
+    { name: 'Real Estate ETF', ticker: 'VNQ', type: 'etf', class: 'Real Estate', weight: 10, yield: 3.91, cagr: 7.35, expense: 0.13, schedule: 'quarterly', drip: true },
+  ];
+
+  // Example portfolio: Aggressive Growth (High Risk)
+  const AGGRESSIVE_GROWTH_PORTFOLIO = [
+    { name: 'Total US Stock Market', ticker: 'VTI', type: 'etf', class: 'US Equity', weight: 60, yield: 1.19, cagr: 9.19, expense: 0.03, schedule: 'quarterly', drip: true },
+    { name: 'International ETF', ticker: 'VXUS', type: 'etf', class: 'International Equity', weight: 25, yield: 2.78, cagr: 5.44, expense: 0.05, schedule: 'quarterly', drip: true },
+    { name: 'Global Equity ETF', ticker: 'VT', type: 'etf', class: 'Global Equity', weight: 10, yield: 1.73, cagr: 8.15, expense: 0.06, schedule: 'quarterly', drip: true },
+    { name: 'Options-Income ETF', ticker: 'QYLD', type: 'etf', class: 'Options-Income', weight: 5, yield: 13.26, cagr: 7.74, expense: 0.61, schedule: 'monthly', drip: true }
+  ];
+
+  // Add example portfolios to saved portfolios if not present
+  document.addEventListener('DOMContentLoaded', () => {
+    const portfolios = getPortfolios();
+    if (!portfolios['Dave Ramsey Example']) {
+      portfolios['Dave Ramsey Example'] = DAVE_RAMSEY_PORTFOLIO;
+    }
+    if (!portfolios['Conservative Example']) {
+      portfolios['Conservative Example'] = CONSERVATIVE_PORTFOLIO;
+    }
+    if (!portfolios['Balanced Example']) {
+      portfolios['Balanced Example'] = BALANCED_PORTFOLIO;
+    }
+    if (!portfolios['Aggressive Growth Example']) {
+      portfolios['Aggressive Growth Example'] = AGGRESSIVE_GROWTH_PORTFOLIO;
+    }
+    savePortfolios(portfolios);
+  });
+ 
   // Stock Research Modal logic
   document.addEventListener('DOMContentLoaded', function() {
     var researchBtn = document.getElementById('stockResearchBtn');
