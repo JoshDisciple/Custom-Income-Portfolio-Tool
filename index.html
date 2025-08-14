@@ -1538,7 +1538,8 @@
   // Render Uninvested Cash row
   const cashRow = document.getElementById('uninvestedCashRow');
   if (cashRow) {
-    const cashExpense = parseFloat(localStorage.getItem(`uninvestedCashExpense_${activePortfolio}`)) || 0;
+    const cashExpenseRaw = localStorage.getItem(`uninvestedCashExpense_${activePortfolio}`);
+    const cashExpense = cashExpenseRaw !== null && cashExpenseRaw !== undefined && cashExpenseRaw !== '' ? parseFloat(cashExpenseRaw) : '';
     // StockAnalysis.com link for cash ticker
     let cashLink = '';
     if (cashTicker) {
@@ -1550,16 +1551,17 @@
         cashLink = `https://stockanalysis.com/stocks/${cashTicker.toLowerCase()}/`;
       }
     }
-    const cashCagr = parseFloat(localStorage.getItem(`uninvestedCashCagr_${activePortfolio}`)) || 0;
+    const cashCagrRaw = localStorage.getItem(`uninvestedCashCagr_${activePortfolio}`);
+    const cashCagr = cashCagrRaw !== null && cashCagrRaw !== undefined && cashCagrRaw !== '' ? parseFloat(cashCagrRaw) : '';
     cashRow.innerHTML = `
       <td><strong>Uninvested Cash</strong></td>
       <td class="editable-cash-cell" data-field="cashTicker"><a href="${cashLink}" target="_blank" id="uninvestedCashTickerDisplay">${cashTicker || ''}</a></td>
-      <td class="editable-cash-cell" data-field="cashType" id="uninvestedCashTypeDisplay">${cashType}</td>
-      <td class="editable-cash-cell" data-field="cashClass" id="uninvestedCashClassDisplay">${cashClass}</td>
-      <td class="editable-cash-cell" data-field="cashAmount"><span id="uninvestedCashAmountDisplay">$${cashAmount.toLocaleString()}</span></td>
-      <td class="editable-cash-cell" data-field="cashYield"><span id="uninvestedCashYieldDisplay">${cashYield.toFixed(2)}%</span></td>
-      <td class="editable-cash-cell" data-field="cashCagr"><span id="uninvestedCashCagrDisplay">${cashCagr.toFixed(2)}%</span></td>
-      <td class="editable-cash-cell" data-field="cashExpense"><span id="uninvestedCashExpenseDisplay">${cashExpense.toFixed(2)}%</span></td>
+      <td class="editable-cash-cell" data-field="cashType" id="uninvestedCashTypeDisplay">${cashType !== '' && cashType !== undefined ? cashType : ''}</td>
+      <td class="editable-cash-cell" data-field="cashClass" id="uninvestedCashClassDisplay">${cashClass !== '' && cashClass !== undefined ? cashClass : ''}</td>
+      <td class="editable-cash-cell" data-field="cashAmount"><span id="uninvestedCashAmountDisplay">${cashAmount !== 0 && cashAmount !== '' ? '$' + cashAmount.toLocaleString() : ''}</span></td>
+      <td class="editable-cash-cell" data-field="cashYield"><span id="uninvestedCashYieldDisplay">${cashYield !== 0 && cashYield !== '' ? cashYield.toFixed(2) + '%' : ''}</span></td>
+      <td class="editable-cash-cell" data-field="cashCagr"><span id="uninvestedCashCagrDisplay">${cashCagr !== 0 && cashCagr !== '' ? cashCagr.toFixed(2) + '%' : ''}</span></td>
+      <td class="editable-cash-cell" data-field="cashExpense"><span id="uninvestedCashExpenseDisplay">${cashExpense !== 0 && cashExpense !== '' ? cashExpense.toFixed(2) + '%' : ''}</span></td>
       <td></td>
       <td></td>
       <td></td>
@@ -2782,9 +2784,23 @@
   document.getElementById('exportBtn').addEventListener('click', () => {
     const portfolios = getPortfolios();
     const activePortfolio = getActivePortfolioName();
+    // Gather uninvested cash fields for each portfolio
+    const cashFields = {};
+    Object.keys(portfolios).forEach(name => {
+      cashFields[name] = {
+        cashAmount: localStorage.getItem(`uninvestedCashAmount_${name}`) || '0',
+        cashYield: localStorage.getItem(`uninvestedCashYield_${name}`) || '0',
+        cashExpense: localStorage.getItem(`uninvestedCashExpense_${name}`) || '0',
+        cashTicker: localStorage.getItem(`uninvestedCashTicker_${name}`) || '',
+        cashType: localStorage.getItem(`uninvestedCashType_${name}`) || 'cash',
+        cashClass: localStorage.getItem(`uninvestedCashClass_${name}`) || 'Short Term / Cash / Money Market',
+        cashCagr: localStorage.getItem(`uninvestedCashCagr_${name}`) || '0'
+      };
+    });
     const exportData = {
       portfolios,
-      activePortfolio
+      activePortfolio,
+      uninvestedCash: cashFields
     };
     const dataStr = JSON.stringify(exportData, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
@@ -2809,6 +2825,21 @@
           savePortfolios(imported.portfolios);
           setActivePortfolioName(imported.activePortfolio || Object.keys(imported.portfolios)[0]);
           holdings = imported.portfolios[getActivePortfolioName()] || [];
+          // Restore uninvested cash fields for each portfolio
+          if (imported.uninvestedCash && typeof imported.uninvestedCash === 'object') {
+            Object.keys(imported.uninvestedCash).forEach(name => {
+              const cash = imported.uninvestedCash[name];
+              if (cash) {
+                localStorage.setItem(`uninvestedCashAmount_${name}`, cash.cashAmount || '0');
+                localStorage.setItem(`uninvestedCashYield_${name}`, cash.cashYield || '0');
+                localStorage.setItem(`uninvestedCashExpense_${name}`, cash.cashExpense || '0');
+                localStorage.setItem(`uninvestedCashTicker_${name}`, cash.cashTicker || '');
+                localStorage.setItem(`uninvestedCashType_${name}`, cash.cashType || 'cash');
+                localStorage.setItem(`uninvestedCashClass_${name}`, cash.cashClass || 'Short Term / Cash / Money Market');
+                localStorage.setItem(`uninvestedCashCagr_${name}`, cash.cashCagr || '0');
+              }
+            });
+          }
           renderHoldingsTable();
           updateCategoryWeights();
           updateContributionAllocation();
