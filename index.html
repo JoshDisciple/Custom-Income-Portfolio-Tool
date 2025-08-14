@@ -468,29 +468,31 @@
   <div id="overviewModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
   <div class="modal-fade" id="overviewModalInner" style="background:var(--card-bg);color:var(--text-colour);max-width:820px;width:98vw;padding:2rem 2.5rem;border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,0.30);position:relative;">
       <button id="closeOverviewModal" class="btn" style="position:absolute;top:1rem;right:1rem;">Close</button>
-      <h2>Overview</h2>
-      <p>This tool helps you design a personalized income and growth portfolio. Add your holdings, set weights, and see real-time projections for income and portfolio growth. The tool supports both price growth and total growth (with DRIP), and provides instant breakdowns by holding and asset class.</p>
-      <p><strong>Fetch Data:</strong> Enter a ticker symbol (e.g., <code>SCHD</code>, <code>VTSAX</code>, <code>AAPL</code>) to auto-fill fund details. You can edit any value before adding. Coverage varies by ticker.</p>
-      <h3 style="margin-top:0;">How to Use</h3>
-      <ol style="margin-bottom:1rem;">
-        <li><strong>Add Holdings:</strong> Enter or fetch fund details, then click <b>Add</b>. Specify the Type (Stock, ETF, Mutual Fund) and Asset Category (US Equity, International Equity, Global Equity, Options-Income, Fixed Income, Real Estate, Cash, Commodity, Alternative, Balanced, Other) using dropdowns.</li>
-        <li><strong>Inline Edit Holdings:</strong> Click directly on any cell in the holdings table for Weight, Yield, CAGR, Type, Category, Expense, or Schedule to edit instantly. Dropdowns are used for Type and Category. Changes are saved on blur, Enter, or selection change.</li>
-        <li><strong>Ticker Links:</strong> Ticker symbols link to StockAnalysis.com, with correct format for stocks, ETFs, and mutual funds.</li>
-        <li><strong>Adjust Weights:</strong> Set allocation for each holding (total must not exceed 100%).</li>
-        <li><strong>Portfolio Manager:</strong> Save, load, rename, and delete multiple portfolios. Use the sticky menu at the bottom to manage your portfolio sets and switch between them instantly.</li>
-        <li><strong>Contribution Allocator:</strong> See how a lump sum would be distributed across holdings.</li>
-        <li><strong>Income Calculator:</strong> Use the slider to estimate annual, quarterly, and monthly income.</li>
-        <li><strong>Growth Projection:</strong> Model portfolio growth over time, with or without DRIP, and view Rule of 72 estimates for both scenarios.</li>
-        <li><strong>Breakdowns & Charts:</strong> View per-holding and per-asset-category breakdowns, and switch between table and pie chart views.</li>
-        <li><strong>Settings:</strong> Export/import portfolios, change theme, and manage DRIP defaults.</li>
-      </ol>
-      <ul style="margin-bottom:0.5rem;">
-        <li>Supports <b>DRIP</b> toggles per holding</li>
-        <li>Shows both per-holding and per-asset-class income breakdowns</li>
-        <li>Visualize allocations with pie chart or table</li>
-        <li>Growth chart with Rule of 72 estimates for both DRIP and non-DRIP</li>
-        <li>All data is stored locally in your browser for privacy</li>
-      </ul>
+      <div style="max-height:70vh;overflow-y:auto;padding-right:1rem;">
+        <h2>Overview</h2>
+        <p>This tool helps you design a personalized income and growth portfolio. Add your holdings, set weights, and see real-time projections for income and portfolio growth. The tool supports both price growth and total growth (with DRIP), and provides instant breakdowns by holding and asset class.</p>
+        <p><strong>Fetch Data:</strong> Enter a ticker symbol (e.g., <code>SCHD</code>, <code>VTSAX</code>, <code>AAPL</code>) to auto-fill fund details. You can edit any value before adding. Coverage varies by ticker.</p>
+        <h3 style="margin-top:0;">How to Use</h3>
+        <ol style="margin-bottom:1rem;">
+          <li><strong>Add Holdings:</strong> Enter or fetch fund details, then click <b>Add</b>. Specify the Type (Stock, ETF, Mutual Fund) and Asset Category (US Equity, International Equity, Global Equity, Options-Income, Fixed Income, Real Estate, Cash, Commodity, Alternative, Balanced, Other) using dropdowns.</li>
+          <li><strong>Inline Edit Holdings:</strong> Click directly on any cell in the holdings table for Weight, Yield, CAGR, Type, Category, Expense, or Schedule to edit instantly. Dropdowns are used for Type and Category. Changes are saved on blur, Enter, or selection change.</li>
+          <li><strong>Ticker Links:</strong> Ticker symbols link to StockAnalysis.com, with correct format for stocks, ETFs, and mutual funds.</li>
+          <li><strong>Adjust Weights:</strong> Set allocation for each holding (total must not exceed 100%).</li>
+          <li><strong>Portfolio Manager:</strong> Save, load, rename, and delete multiple portfolios. Use the sticky menu at the bottom to manage your portfolio sets and switch between them instantly.</li>
+          <li><strong>Contribution Allocator:</strong> See how a lump sum would be distributed across holdings.</li>
+          <li><strong>Income Calculator:</strong> Use the slider to estimate annual, quarterly, and monthly income.</li>
+          <li><strong>Growth Projection:</strong> Model portfolio growth over time, with or without DRIP, and view Rule of 72 estimates for both scenarios.</li>
+          <li><strong>Breakdowns & Charts:</strong> View per-holding and per-asset-category breakdowns, and switch between table and pie chart views.</li>
+          <li><strong>Settings:</strong> Export/import portfolios, change theme, and manage DRIP defaults.</li>
+        </ol>
+        <ul style="margin-bottom:0.5rem;">
+          <li>Supports <b>DRIP</b> toggles per holding</li>
+          <li>Shows both per-holding and per-asset-class income breakdowns</li>
+          <li>Visualize allocations with pie chart or table</li>
+          <li>Growth chart with Rule of 72 estimates for both DRIP and non-DRIP</li>
+          <li>All data is stored locally in your browser for privacy</li>
+        </ul>
+      </div>
     </div>
   </div>
   <div id="glossaryModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
@@ -596,7 +598,8 @@
               <option value="Options-Income">Options-Income</option>
               <option value="Fixed Income">Fixed Income</option>
               <option value="Real Estate">Real Estate</option>
-              <option value="Cash">Cash</option>
+              <option value="Short Term / Cash / Money Market">Short Term / Cash / Money Market</option>
+              <option value="FDIC">FDIC</option>
               <option value="Commodity">Commodity</option>
               <option value="Alternative">Alternative</option>
               <option value="Balanced">Balanced</option>
@@ -669,6 +672,20 @@
 </thead>
 
         <tbody id="holdingsBody"></tbody>
+        <!-- Uninvested Cash Row -->
+        <tr id="uninvestedCashRow" style="background:var(--hover-bg);">
+  <td><strong>Uninvested Cash</strong></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td class="editable-cash-cell" data-field="cashAmount"><span id="uninvestedCashAmountDisplay">0</span></td>
+  <td class="editable-cash-cell" data-field="cashYield"><span id="uninvestedCashYieldDisplay">0</span></td>
+  <td></td>
+  <td class="editable-cash-cell" data-field="cashExpense"><span id="uninvestedCashExpenseDisplay">0</span></td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
         <tfoot id="holdingsTotals"></tfoot>
       </table>
     </div>
@@ -686,10 +703,16 @@
       <button id="exportContributionCSV" class="btn">Export Allocation as CSV</button>
     </div>
   </div>
-  <p>Allocate a lump sum according to your target weights. Enter an amount and see how much goes to each holding.</p>
-  <div class="input-group" style="max-width:200px;">
-    <label for="contributionInput">Contribution Amount ($)</label>
-    <input type="number" id="contributionInput" class="styled-input" min="0" step="100" value="0" />
+  <p>Allocate a lump sum according to your target weights. Enter an amount and see how much goes to each holding. <br><br><strong>New:</strong> You can set a cash target to keep uninvested from the contribution.</p>
+  <div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:end;">
+    <div class="input-group" style="max-width:200px;">
+      <label for="contributionInput">Contribution Amount ($)</label>
+      <input type="number" id="contributionInput" class="styled-input" min="0" step="100" value="0" />
+    </div>
+    <div class="input-group" style="max-width:200px;">
+      <label for="contributionCashInput">Uninvested Cash Target ($)</label>
+      <input type="number" id="contributionCashInput" class="styled-input" min="0" step="100" value="0" />
+    </div>
   </div>
   <div id="allocationBreakdown" style="margin-top:1rem; display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.75rem;"></div>
   </section>
@@ -703,7 +726,7 @@
       <button id="toggleClassIncome" class="btn">Show Asset‑Class Income</button>
     </div>
   </div>
-  <p>This calculator provides a <strong>theoretical estimate</strong> of your portfolio’s income based on a constant weighted average distribution yield. The yield is automatically calculated from your holdings in the portfolio section, while you can adjust the current portfolio value using the slider (in $1,000 increments) to explore different scenarios. The display includes:</p>
+  <p>This calculator provides a <strong>theoretical estimate</strong> of your portfolio’s income based on a constant weighted average distribution yield. The yield is automatically calculated from your holdings in the portfolio section, while you can adjust the current portfolio value using the slider (in $1,000 increments) to explore different scenarios. <br><br><strong>New:</strong> You can set a defined cash amount to keep uninvested (e.g. for HSA cash requirements). Holdings will be allocated based on the remaining invested balance.</p>
   <ul>
     <li><strong>Annual, Quarterly, and Monthly Income</strong></li>
     <li><strong>Income by Holding</strong> – individual security breakdown</li>
@@ -839,6 +862,28 @@
     </div>
   </div>
 
+  <script>
+  // Define asset class options globally for reuse
+  const ASSET_CLASS_OPTIONS = [
+    'US Equity', 'International Equity', 'Global Equity', 'Options-Income',
+    'Fixed Income', 'Real Estate', 'Short Term / Cash / Money Market', 'FDIC',
+    'Commodity', 'Alternative', 'Balanced', 'Other'
+  ];
+  function createAssetClassDropdown(selectedValue) {
+    const select = document.createElement('select');
+    select.className = 'styled-input';
+    ASSET_CLASS_OPTIONS.forEach(optVal => {
+      const opt = document.createElement('option');
+      opt.value = optVal;
+      opt.textContent = optVal;
+      if (optVal === selectedValue ||
+        (optVal === 'Short Term / Cash / Money Market' && selectedValue === 'Short Term / Cash'))
+        opt.selected = true;
+      select.appendChild(opt);
+    });
+    return select;
+  }
+  </script>
   <script>
   // Sticky portfolio menu logic (improved)
   document.addEventListener('DOMContentLoaded', function() {
@@ -1050,7 +1095,12 @@
     Object.keys(portfolios).forEach(name => {
       const opt = document.createElement('option');
       opt.value = name;
-      opt.textContent = name;
+      // Add icon for default/example portfolios
+      if (name.toLowerCase() === 'default' || name.toLowerCase().includes('example')) {
+        opt.textContent = '🔄 ' + name + ' (auto-restores)';
+      } else {
+        opt.textContent = name;
+      }
       select.appendChild(opt);
     });
     select.value = getActivePortfolioName();
@@ -1465,9 +1515,59 @@
       `;
       holdingsBody.appendChild(tr);
     });
-    renderHoldingsTotals();
-    attachRowEvents();
-    attachInlineEditEvents();
+  // Update uninvested cash display from localStorage, per portfolio
+  const activePortfolio = getActivePortfolioName();
+  const cashAmount = parseFloat(localStorage.getItem(`uninvestedCashAmount_${activePortfolio}`)) || 0;
+  const cashYield = parseFloat(localStorage.getItem(`uninvestedCashYield_${activePortfolio}`)) || 0;
+  const cashTicker = localStorage.getItem(`uninvestedCashTicker_${activePortfolio}`) || '';
+  const cashType = localStorage.getItem(`uninvestedCashType_${activePortfolio}`) || 'cash';
+  const cashClass = localStorage.getItem(`uninvestedCashClass_${activePortfolio}`) || 'Short Term / Cash / Money Market';
+  // StockAnalysis.com link logic
+  let linkType = 'stocks';
+  let linkUrl = '';
+  if (cashTicker) {
+    if (cashType === 'etf') {
+      linkType = 'etf';
+      linkUrl = `https://stockanalysis.com/${linkType}/${cashTicker.toLowerCase()}/`;
+    } else if (cashType === 'mutual') {
+      linkUrl = `https://stockanalysis.com/quote/mutf/${cashTicker.toLowerCase()}/`;
+    } else {
+      linkUrl = `https://stockanalysis.com/${linkType}/${cashTicker.toLowerCase()}/`;
+    }
+  }
+  // Render Uninvested Cash row
+  const cashRow = document.getElementById('uninvestedCashRow');
+  if (cashRow) {
+    const cashExpense = parseFloat(localStorage.getItem(`uninvestedCashExpense_${activePortfolio}`)) || 0;
+    // StockAnalysis.com link for cash ticker
+    let cashLink = '';
+    if (cashTicker) {
+      if (cashType === 'etf') {
+        cashLink = `https://stockanalysis.com/etf/${cashTicker.toLowerCase()}/`;
+      } else if (cashType === 'mutual') {
+        cashLink = `https://stockanalysis.com/quote/mutf/${cashTicker.toLowerCase()}/`;
+      } else {
+        cashLink = `https://stockanalysis.com/stocks/${cashTicker.toLowerCase()}/`;
+      }
+    }
+    const cashCagr = parseFloat(localStorage.getItem(`uninvestedCashCagr_${activePortfolio}`)) || 0;
+    cashRow.innerHTML = `
+      <td><strong>Uninvested Cash</strong></td>
+      <td class="editable-cash-cell" data-field="cashTicker"><a href="${cashLink}" target="_blank" id="uninvestedCashTickerDisplay">${cashTicker || ''}</a></td>
+      <td class="editable-cash-cell" data-field="cashType" id="uninvestedCashTypeDisplay">${cashType}</td>
+      <td class="editable-cash-cell" data-field="cashClass" id="uninvestedCashClassDisplay">${cashClass}</td>
+      <td class="editable-cash-cell" data-field="cashAmount"><span id="uninvestedCashAmountDisplay">$${cashAmount.toLocaleString()}</span></td>
+      <td class="editable-cash-cell" data-field="cashYield"><span id="uninvestedCashYieldDisplay">${cashYield.toFixed(2)}%</span></td>
+      <td class="editable-cash-cell" data-field="cashCagr"><span id="uninvestedCashCagrDisplay">${cashCagr.toFixed(2)}%</span></td>
+      <td class="editable-cash-cell" data-field="cashExpense"><span id="uninvestedCashExpenseDisplay">${cashExpense.toFixed(2)}%</span></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    `;
+  }
+  renderHoldingsTotals();
+  attachRowEvents();
+  attachInlineEditEvents();
   // Inline editing for table cells (Weight, Yield, CAGR)
   function attachInlineEditEvents() {
     holdingsBody.querySelectorAll('.editable-cell').forEach(cell => {
@@ -1504,27 +1604,7 @@
             input.appendChild(opt);
           });
         } else if (field === 'class') {
-          input = document.createElement('select');
-          input.className = 'styled-input';
-          [
-            'US Equity',
-            'International Equity',
-            'Global Equity',
-            'Options-Income',
-            'Fixed Income',
-            'Real Estate',
-            'Cash',
-            'Commodity',
-            'Alternative',
-            'Balanced',
-            'Other'
-          ].forEach(optVal => {
-            const opt = document.createElement('option');
-            opt.value = optVal;
-            opt.textContent = optVal;
-            if (optVal === value) opt.selected = true;
-            input.appendChild(opt);
-          });
+          input = createAssetClassDropdown(value);
         } else {
           input = document.createElement('input');
           input.type = 'number';
@@ -1543,9 +1623,7 @@
         // Save on blur or Enter/change
         function saveEdit() {
           let newVal;
-          if (field === 'schedule') {
-            newVal = input.value;
-          } else if (field === 'type') {
+          if (field === 'schedule' || field === 'type') {
             newVal = input.value;
           } else if (field === 'class') {
             newVal = input.value.trim();
@@ -1572,6 +1650,123 @@
         }
       });
     });
+      // Inline editing for uninvested cash cells (Ticker, Type, Class, Amount, Yield, Expense)
+      document.querySelectorAll('.editable-cash-cell').forEach(cell => {
+        cell.addEventListener('click', function(e) {
+          if (cell.querySelector('input') || cell.querySelector('select')) return; // Already editing
+          const field = cell.getAttribute('data-field');
+          const activePortfolio = getActivePortfolioName();
+          let value = '';
+          if (field === 'cashAmount') {
+            value = localStorage.getItem(`uninvestedCashAmount_${activePortfolio}`) || '0';
+          } else if (field === 'cashYield') {
+            value = localStorage.getItem(`uninvestedCashYield_${activePortfolio}`) || '0';
+          } else if (field === 'cashExpense') {
+            value = localStorage.getItem(`uninvestedCashExpense_${activePortfolio}`) || '0';
+          } else if (field === 'cashTicker') {
+            value = localStorage.getItem(`uninvestedCashTicker_${activePortfolio}`) || '';
+          } else if (field === 'cashType') {
+            value = localStorage.getItem(`uninvestedCashType_${activePortfolio}`) || 'cash';
+          } else if (field === 'cashClass') {
+            value = localStorage.getItem(`uninvestedCashClass_${activePortfolio}`) || 'Short Term / Cash / Money Market';
+          } else if (field === 'cashCagr') {
+            value = localStorage.getItem(`uninvestedCashCagr_${activePortfolio}`) || '0';
+          }
+          let input;
+          if (field === 'cashType') {
+            input = document.createElement('select');
+            input.className = 'styled-input';
+            [
+              {val: 'stock', label: 'Stock'},
+              {val: 'etf', label: 'ETF'},
+              {val: 'mutual', label: 'Mutual Fund'},
+              {val: 'cash', label: 'Cash'}
+            ].forEach(optObj => {
+              const opt = document.createElement('option');
+              opt.value = optObj.val;
+              opt.textContent = optObj.label;
+              if (optObj.val === value) opt.selected = true;
+              input.appendChild(opt);
+            });
+          } else if (field === 'cashClass') {
+            input = createAssetClassDropdown(value);
+          } else if (field === 'cashExpense') {
+            input = document.createElement('input');
+            input.type = 'number';
+            input.value = value;
+            input.className = 'styled-input';
+            input.style.width = '70px';
+            input.style.fontSize = '0.95em';
+            input.style.textAlign = 'right';
+            input.min = '0';
+            input.max = '100';
+            input.step = '0.01';
+          } else if (field === 'cashTicker') {
+            input = document.createElement('input');
+            input.type = 'text';
+            input.value = value;
+            input.className = 'styled-input';
+            input.style.width = '70px';
+            input.style.fontSize = '0.95em';
+            input.style.textAlign = 'right';
+            input.maxLength = 12;
+          } else {
+            input = document.createElement('input');
+            input.type = field === 'cashAmount' || field === 'cashYield' ? 'number' : 'text';
+            input.value = value;
+            input.className = 'styled-input';
+            input.style.width = '70px';
+            input.style.fontSize = '0.95em';
+            input.style.textAlign = 'right';
+            input.min = '0';
+            input.step = field === 'cashYield' ? '0.01' : '0.1';
+          }
+          cell.innerHTML = '';
+          cell.appendChild(input);
+          input.focus();
+          if (input.select) input.select();
+          function saveCashEdit() {
+            let newVal = input.value;
+            if (field === 'cashAmount' || field === 'cashYield' || field === 'cashCagr') {
+              newVal = parseFloat(input.value);
+              if (isNaN(newVal)) newVal = 0;
+            } else if (field === 'cashExpense') {
+              newVal = parseFloat(input.value);
+              if (isNaN(newVal)) newVal = 0;
+            }
+            if (field === 'cashTicker') {
+              localStorage.setItem(`uninvestedCashTicker_${activePortfolio}`, newVal.toUpperCase());
+            } else if (field === 'cashType') {
+              localStorage.setItem(`uninvestedCashType_${activePortfolio}`, newVal);
+            } else if (field === 'cashClass') {
+              localStorage.setItem(`uninvestedCashClass_${activePortfolio}`, newVal);
+            } else if (field === 'cashAmount') {
+              localStorage.setItem(`uninvestedCashAmount_${activePortfolio}`, newVal);
+            } else if (field === 'cashYield') {
+              localStorage.setItem(`uninvestedCashYield_${activePortfolio}`, newVal);
+            } else if (field === 'cashCagr') {
+              localStorage.setItem(`uninvestedCashCagr_${activePortfolio}`, newVal);
+            } else if (field === 'cashExpense') {
+              localStorage.setItem(`uninvestedCashExpense_${activePortfolio}`, newVal);
+            }
+            renderHoldingsTable();
+            updateIncome();
+          }
+          if (field === 'cashType' || field === 'cashClass') {
+            input.addEventListener('change', saveCashEdit);
+            input.addEventListener('blur', saveCashEdit);
+          } else {
+            input.addEventListener('blur', saveCashEdit);
+            input.addEventListener('keydown', function(ev) {
+              if (ev.key === 'Enter') {
+                input.blur();
+              } else if (ev.key === 'Escape') {
+                renderHoldingsTable();
+              }
+            });
+          }
+        });
+      });
   }
   }
 
@@ -1691,9 +1886,11 @@
   // Update contribution allocation display
   function updateContributionAllocation() {
     const amount = parseFloat(contributionInput.value) || 0;
+    const cashTarget = parseFloat(document.getElementById('contributionCashInput').value) || 0;
+    const investedAmount = Math.max(amount - cashTarget, 0);
     allocationBreakdown.innerHTML = '';
     holdings.forEach(h => {
-      const allocated = (amount * parseFloat(h.weight) / 100).toFixed(2);
+      const allocated = (investedAmount * parseFloat(h.weight) / 100).toFixed(2);
       const box = document.createElement('div');
       box.style.backgroundColor = 'var(--hover-bg)';
       box.style.border = '1px solid var(--border-colour)';
@@ -1703,66 +1900,102 @@
       box.innerHTML = `<strong>${h.ticker}:</strong> $${Number(allocated).toLocaleString()}`;
       allocationBreakdown.appendChild(box);
     });
+    // Show cash target summary
+    if (cashTarget > 0) {
+      const cashBox = document.createElement('div');
+      cashBox.style.backgroundColor = 'var(--hover-bg)';
+      cashBox.style.border = '1px solid var(--border-colour)';
+      cashBox.style.borderRadius = '6px';
+      cashBox.style.padding = '0.5rem';
+      cashBox.style.fontSize = '0.85rem';
+      cashBox.innerHTML = `<strong>Uninvested Cash:</strong> $${Number(cashTarget).toLocaleString()}`;
+      allocationBreakdown.appendChild(cashBox);
+    }
   }
 
   contributionInput.addEventListener('input', updateContributionAllocation);
+  document.getElementById('contributionCashInput').addEventListener('input', updateContributionAllocation);
 
   // Income calculation functions
   function updateIncome() {
-    const portfolio = parseFloat(accountSlider.value) || 0;
+  const portfolio = parseFloat(accountSlider.value) || 0;
+  // Get active portfolio name
+  const activePortfolio = getActivePortfolioName ? getActivePortfolioName() : 'default';
+  // Get cash amount and yield from localStorage, portfolio-specific
+  const cashAmount = parseFloat(localStorage.getItem(`uninvestedCashAmount_${activePortfolio}`)) || 0;
+  const cashYield = parseFloat(localStorage.getItem(`uninvestedCashYield_${activePortfolio}`)) || 0;
+    const cashExpense = parseFloat(localStorage.getItem(`uninvestedCashExpense_${activePortfolio}`)) || 0;
+  const investedBalance = Math.max(portfolio - cashAmount, 0);
     sliderValSpan.textContent = `$${Number(portfolio).toLocaleString()}`;
     let annual = 0;
     let weightedYield = 0;
     holdings.forEach(h => {
       const weight = parseFloat(h.weight) / 100;
-      const value = portfolio * weight;
+      const value = investedBalance * weight;
       // Convert percent to decimal for calculation
       const income = value * (h.yield / 100);
       annual += income;
       weightedYield += weight * (h.yield / 100);
     });
+    // Add uninvested cash income
+    const cashIncome = cashAmount * (cashYield / 100);
+    annual += cashIncome;
+    // Calculate and display uninvested cash expense
+    const cashAnnualExpense = cashAmount * (cashExpense / 100);
+    const cashExpenseDisplay = document.getElementById('uninvestedCashExpenseDisplay');
+    if (cashExpenseDisplay) {
+      // Only show dollar annual fee for non-cash holdings
+      if (cashExpenseDisplay.closest('tr')?.id === 'uninvestedCashRow') {
+        cashExpenseDisplay.textContent = cashExpense.toFixed(2) + '%';
+      } else {
+        cashExpenseDisplay.textContent = cashExpense.toFixed(2) + '% ($' + cashAnnualExpense.toFixed(2) + ')';
+      }
+    }
+    // Weighted yield for display (holdings only)
+    weightedYieldSpan.textContent = (weightedYield * 100).toFixed(2) + '%';
     const monthly = annual / 12;
     const quarter = annual / 4;
     annualSpan.textContent = `$${annual.toFixed(2).toLocaleString()}`;
     monthlySpan.textContent = `$${monthly.toFixed(2).toLocaleString()}`;
     quarterSpan.textContent = `$${quarter.toFixed(2).toLocaleString()}`;
-    weightedYieldSpan.textContent = (weightedYield * 100).toFixed(2) + '%';
     // Update summary bar
     summaryAnnual.textContent = annualSpan.textContent;
     summaryQuarter.textContent = quarterSpan.textContent;
     summaryMonthly.textContent = monthlySpan.textContent;
-    summaryPortfolio.textContent = `$${Number(portfolio).toLocaleString()}`;
+    summaryPortfolio.textContent = `$${Number(portfolio).toLocaleString()} (Invested: $${investedBalance.toLocaleString()}, Cash: $${cashAmount.toLocaleString()})`;
     // Calculate weighted average expense ratio and annual fees
     let weightedExpense = 0;
     holdings.forEach(h => {
       const weight = parseFloat(h.weight) / 100;
       weightedExpense += weight * (h.expense || 0);
     });
-    const annualFees = portfolio * (weightedExpense / 100);
+    const annualFees = investedBalance * (weightedExpense / 100);
+    // Add uninvested cash expense to annual fees
+    const totalAnnualFees = annualFees + cashAnnualExpense;
     const summaryAnnualFees = document.getElementById('summaryAnnualFees');
     if (summaryAnnualFees) {
-      summaryAnnualFees.textContent = `$${annualFees.toFixed(2).toLocaleString()}`;
+      summaryAnnualFees.textContent = `$${totalAnnualFees.toFixed(2).toLocaleString()}`;
     }
 
-    // Show the portfolio value in the growth section and refresh the growth chart
+    // Show the invested balance in the growth section and refresh the growth chart
     const growthInitialDisplay = document.getElementById('growthInitialDisplay');
     if (growthInitialDisplay) {
-      growthInitialDisplay.textContent = `$${Number(portfolio).toLocaleString()}`;
+      growthInitialDisplay.textContent = `$${Number(investedBalance).toLocaleString()} (Cash: $${cashAmount.toLocaleString()})`;
     }
     updateGrowthChart();
     // If detailed breakdown visible update it
     if (detailedIncomeDiv.style.display !== 'none') {
-      renderDetailedIncome(portfolio);
+      renderDetailedIncome(investedBalance, cashAmount, cashYield);
     }
     // If class income breakdown visible update it
     const classDiv = document.getElementById('classIncomeBreakdown');
     if (classDiv.style.display !== 'none') {
-      renderClassIncome(portfolio);
+      renderClassIncome(investedBalance, cashAmount, cashYield);
     }
   }
 
   // Render per holding income breakdown
-  function renderDetailedIncome(portfolio) {
+  function renderDetailedIncome(portfolio, cashAmount = 0, cashYield = 0) {
     let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.75rem;">';
     holdings.forEach(h => {
       const weight = parseFloat(h.weight) / 100;
@@ -1775,15 +2008,26 @@
         <span style="color:var(--muted-text);">Holding Value:</span> <span style="font-weight:600;">$${val.toFixed(2).toLocaleString()}</span><br>
         <span style="color:var(--muted-text);">Annual Income:</span> <span style="color: var(--accent); font-weight:600;">$${annualIncome.toFixed(2).toLocaleString()}</span><br>
         <span style="color:var(--muted-text);">Quarterly:</span> <span style="font-weight:600;">$${quarterlyIncome.toFixed(2).toLocaleString()}</span><br>
-        <span style="color:var(--muted-text);">Monthly:</span> <span style="font-weight:600;">$${monthlyIncome.toFixed(2).toLocaleString()}</span>
-      </div>`;
+        <span style="color:var(--muted-text);">Monthly:</span> <span style="font-weight:600;">$${monthlyIncome.toLocaleString()}
+    </div>`;
     });
+    // Always show uninvested cash breakdown
+    const annualIncome = cashAmount * (cashYield / 100);
+    const monthlyIncome = annualIncome / 12;
+    const quarterlyIncome = annualIncome / 4;
+    html += `<div style="background: var(--hover-bg); border:1px solid var(--border-colour); padding:0.75rem; border-radius:8px; font-size:1rem;">
+      <strong style="font-size:1.1em;">Uninvested Cash</strong><br>
+      <span style="color:var(--muted-text);">Cash Value:</span> <span style="font-weight:600;">$${cashAmount.toLocaleString()}</span><br>
+      <span style="color:var(--muted-text);">Annual Income:</span> <span style="color: var(--accent); font-weight:600;">$${annualIncome.toFixed(2).toLocaleString()}</span><br>
+      <span style="color:var(--muted-text);">Quarterly:</span> <span style="font-weight:600;">$${quarterlyIncome.toFixed(2).toLocaleString()}</span><br>
+      <span style="color:var(--muted-text);">Monthly:</span> <span style="font-weight:600;">$${monthlyIncome.toFixed(2).toLocaleString()}</span>
+    </div>`;
     html += '</div>';
     detailedIncomeDiv.innerHTML = html;
   }
 
   // Render per asset class income breakdown
-  function renderClassIncome(portfolio) {
+  function renderClassIncome(portfolio, cashAmount = 0, cashYield = 0) {
     const classTotals = {};
     holdings.forEach(h => {
       const weight = parseFloat(h.weight) / 100;
@@ -1803,12 +2047,23 @@
       const monthly = annual / 12;
       html += `<div style="background: var(--hover-bg); border:1px solid var(--border-colour); padding:0.75rem; border-radius:8px; font-size:1rem;">
         <strong style="font-size:1.1em;">${cls}</strong><br>
-        <span style="color:var(--muted-text);">Total Value:</span> <span style="font-weight:600;">$${obj.value.toFixed(2).toLocaleString()}</span><br>
+        <span style="color:var(--muted-text);">Total Value:</span> <span style="font-weight:600;">$${obj.value.toLocaleString()}</span><br>
         <span style="color:var(--muted-text);">Annual Income:</span> <span style="color: var(--accent); font-weight:600;">$${annual.toFixed(2).toLocaleString()}</span><br>
         <span style="color:var(--muted-text);">Quarterly:</span> <span style="font-weight:600;">$${quarterly.toFixed(2).toLocaleString()}</span><br>
         <span style="color:var(--muted-text);">Monthly:</span> <span style="font-weight:600;">$${monthly.toFixed(2).toLocaleString()}</span>
       </div>`;
     });
+    // Always show uninvested cash breakdown
+    const annual = cashAmount * (cashYield / 100);
+    const quarterly = annual / 4;
+    const monthly = annual / 12;
+    html += `<div style="background: var(--hover-bg); border:1px solid var(--border-colour); padding:0.75rem; border-radius:8px; font-size:1rem;">
+      <strong style="font-size:1.1em;">Uninvested Cash</strong><br>
+      <span style="color:var(--muted-text);">Cash Value:</span> <span style="font-weight:600;">$${cashAmount.toLocaleString()}</span><br>
+      <span style="color:var(--muted-text);">Annual Income:</span> <span style="color: var(--accent); font-weight:600;">$${annual.toFixed(2).toLocaleString()}</span><br>
+      <span style="color:var(--muted-text);">Quarterly:</span> <span style="font-weight:600;">$${quarterly.toFixed(2).toLocaleString()}</span><br>
+      <span style="color:var(--muted-text);">Monthly:</span> <span style="font-weight:600;">$${monthly.toFixed(2).toLocaleString()}</span>
+    </div>`;
     html += '</div>';
     document.getElementById('classIncomeBreakdown').innerHTML = html;
   }
@@ -1830,12 +2085,17 @@
   });
 
   accountSlider.addEventListener('input', updateIncome);
+  // Remove old cash input event
+  // document.getElementById('cashAmountInput').addEventListener('input', updateIncome);
 
   document.getElementById('toggleDetailedIncome').addEventListener('click', function() {
+    const activePortfolio = getActivePortfolioName ? getActivePortfolioName() : 'default';
+    const cashAmount = parseFloat(localStorage.getItem(`uninvestedCashAmount_${activePortfolio}`)) || 0;
+    const cashYield = parseFloat(localStorage.getItem(`uninvestedCashYield_${activePortfolio}`)) || 0;
     if (detailedIncomeDiv.style.display === 'none') {
       detailedIncomeDiv.style.display = 'block';
       this.textContent = 'Hide Per-Holding Breakdown';
-      renderDetailedIncome(parseFloat(accountSlider.value) || 0);
+      renderDetailedIncome(parseFloat(accountSlider.value) || 0, cashAmount, cashYield);
     } else {
       detailedIncomeDiv.style.display = 'none';
       this.textContent = 'Show Per-Holding Breakdown';
@@ -1844,11 +2104,14 @@
 
   // Toggle asset-class income breakdown
   document.getElementById('toggleClassIncome').addEventListener('click', function() {
+    const activePortfolio = getActivePortfolioName ? getActivePortfolioName() : 'default';
+    const cashAmount = parseFloat(localStorage.getItem(`uninvestedCashAmount_${activePortfolio}`)) || 0;
+    const cashYield = parseFloat(localStorage.getItem(`uninvestedCashYield_${activePortfolio}`)) || 0;
     const classDiv = document.getElementById('classIncomeBreakdown');
     if (classDiv.style.display === 'none') {
       classDiv.style.display = 'block';
       this.textContent = 'Hide Asset‑Class Income';
-      renderClassIncome(parseFloat(accountSlider.value) || 0);
+      renderClassIncome(parseFloat(accountSlider.value) || 0, cashAmount, cashYield);
     } else {
       classDiv.style.display = 'none';
       this.textContent = 'Show Asset‑Class Income';
@@ -2664,12 +2927,13 @@ document.addEventListener('click', function(e) {
     accountSlider.value = 0;
     updateIncome();
   });
-  // Example portfolio: Dave Ramsey's suggested asset mix
+  // Example portfolio: Based on Dave Ramsey's suggested asset mix
   const DAVE_RAMSEY_PORTFOLIO = [
-    { name: 'US Growth Fund', ticker: 'VIGAX', type: 'mutual', class: 'US Equity', weight: 25, yield: 0.43, cagr: 9.51, expense: 0.05, schedule: 'quarterly', drip: true },
-    { name: 'International Growth Fund', ticker: 'VTIAX', type: 'mutual', class: 'International Equity', weight: 25, yield: 2.74, cagr: 5.90, expense: 0.19, schedule: 'quarterly', drip: true },
-    { name: 'US Value Fund', ticker: 'VVIAX', type: 'mutual', class: 'US Equity', weight: 25, yield: 2.17, cagr: 7.47, expense: 0.05, schedule: 'quarterly', drip: true },
-    { name: 'US Small Cap Fund', ticker: 'VSMAX', type: 'mutual', class: 'US Equity', weight: 25, yield: 1.38, cagr: 8.32, expense: 0.05, schedule: 'quarterly', drip: true }
+    { name: 'Vanguard S&P 500 ETF', ticker: 'VOO', type: 'mutual', class: 'US Equity', weight: 12.50, yield: 1.19, cagr: 14.48, expense: 0.03, schedule: 'quarterly', drip: true },
+    { name: 'Vanguard Dividend Appreciation ETF', ticker: 'VIG', type: 'mutual', class: 'US Equity', weight: 12.50, yield: 1.70, cagr: 9.84, expense: 0.05, schedule: 'quarterly', drip: true },
+    { name: 'Vanguard S&P Small-Cap 600 ETF', ticker: 'VIOO', type: 'mutual', class: 'US Equity', weight: 25, yield: 1.53, cagr: 11.18, expense: 0.10, schedule: 'annual', drip: true },
+    { name: 'iShares Core S&P Mid-Cap ETF', ticker: 'IJH', type: 'mutual', class: 'US Equity', weight: 25, yield: 1.38, cagr: 9.37, expense: 0.05, schedule: 'quarterly', drip: true },
+    { name: 'Vanguard FTSE All-World ex-US Index Fund', ticker: 'VEU', type: 'mutual', class: 'International Equity', weight: 25, yield: 2.71, cagr: 4.48, expense: 0.04, schedule: 'quarterly', drip: true }
   ];
 
   // Add Dave Ramsey portfolio to saved portfolios if not present
